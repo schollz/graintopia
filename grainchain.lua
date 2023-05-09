@@ -23,11 +23,31 @@ function load_file(file)
   end
 end
 
+NUM_LANDS=3
+rendering_land=0
+
 function init()
   os.execute("mkdir -p ".._path.audio.."grainchain/recordings")
   os.execute(_path.code.."grainchain/lib/oscnotify/run.sh &")
 
+  -- setup softcut renderer
 
+  softcut.buffer_clear()
+  softcut.event_render(function(ch,start,i,s)
+    if rendering_land>0 then
+      print(string.format("[waveform] rendered %d",rendering_land))
+      local max_val=0
+      for i,v in ipairs(s) do
+        if v>max_val then
+          max_val=math.abs(v)
+        end
+      end
+      for i,v in ipairs(s) do
+        s[i]=math.abs(v)/max_val
+      end
+      lands[rendering_land]:upload_waveform(s)
+    end
+  end)
 
   -- setup osc
   osc_fun={
@@ -44,9 +64,8 @@ function init()
     position=function(args)
       local id=tonumber(args[1])
       local l=tonumber(args[2])
-      local x=util.linlin(0,1,1,127,tonumber(args[3]))
       -- print(string.format("[osc-position] %2.0f-%2.0f: %2.0f",id,l,x))
-      lands[id]:player_set(l,"position",util.round(x))
+      lands[id]:player_set(l,"position",tonumber(args[3]))
     end,
     pan=function(args)
       local id=tonumber(args[1])
@@ -58,9 +77,11 @@ function init()
     volume=function(args)
       local id=tonumber(args[1])
       local l=tonumber(args[2])
-      local x=tonumber(args[3])
+      local x=math.floor(tonumber(args[3]))
       -- print(string.format("[osc-volume] %2.0f-%2.0f: %2.0f",id,l,x))
-      lands[id]:player_set(l,"volume",x)
+      if (x>0 and x<16) then
+        lands[id]:player_set(l,"volume",x)
+      end
     end,
     loop_db=function(args)
       -- local side=tonumber(args[1])
@@ -78,12 +99,26 @@ function init()
     end
   end
 
-  params:add_number("land","land",1,4,1)
+
+  params:add_number("land","land",1,NUM_LANDS,1)
+  params:set_action("land",function(x)
+    local prams={"db","boundary_start","boundary_width","total_energy","sample_file"}
+    for i=1,NUM_LANDS do
+      for _,p in ipairs(prams) do
+        if i==x then
+          params:show(i..p)
+        else
+          params:hide(i..p)
+        end
+      end
+    end
+    _menu.rebuild_params()
+  end)
   lands={}
-  for i=1,1 do
+  for i=1,NUM_LANDS do
     table.insert(lands,land_:new{id=i})
   end
-  params:default()
+  -- params:default()
   params:bang()
 
   -- redraw
@@ -95,12 +130,16 @@ function init()
     end
   end)
 
-  -- lands[1]:load("/home/we/dust/audio/amenbreak/bamboo2_beats16_bpm145.flac")
+  params:set("1sample_file","/home/we/dust/audio/amenbreak/bamboo2_beats16_bpm145.flac")
 end
 
 
 function key(k,z)
-  lands[params:get("land")]:key(k,z)
+  if k>1 then
+    if z==1 then
+      params:delta("land",k==2 and-1 or 1)
+    end
+  end
 end
 
 function enc(k,d)

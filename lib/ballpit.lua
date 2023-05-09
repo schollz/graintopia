@@ -26,7 +26,7 @@ function Ballpit:update()
     b:check_boundary_collision(params:get(self.id.."boundary_start"),params:get(self.id.."boundary_start")+params:get(self.id.."boundary_width"))
     for j,b2 in ipairs(self.balls) do
       if j>i then
-        b:check_collision(b2,self.total_energy,self.total_energy_set)
+        b:check_collision(b2,self.total_energy,params:get(self.id.."total_energy"))
       end
     end
   end

@@ -52,7 +52,7 @@ Engine_Grainchain : CroneEngine {
 			// main arguments
 			arg busWet,busDry,wet=0.5,buf,land,player,baseRate=1.0,rateMult=1.0,db=0.0,timescalein=1,posStart=0,posEnd=1,gate=1;
 			// variables to store UGens later
-			var amp = db.dbamp;
+			var amp = Lag.kr(db.dbamp,1);
 			var volume;
 			var switch=0,snd,snd1,snd2,pos,pos1,pos2,index;
 			// store the number of frames and the duration
@@ -64,9 +64,9 @@ Engine_Grainchain : CroneEngine {
 			// LFO for switching between forward and reverse <-- tinker
 			var lfoForward=Demand.kr(Impulse.kr(timescale/Rand(5,15)),0,Drand([0,1],inf));
 			// LFO for the volume <-- tinker
-			var lfoAmp=SinOsc.kr(timescale/Rand(10,30),Rand(hi:2*pi)).range(0.25,0.5);
+			var lfoAmp=SinOsc.kr(timescale/Rand(10,30),Rand(hi:2*pi)).range(0.5,1);
 			// LFO for the panning <-- tinker
-			var lfoPan=SinOsc.kr(timescale/Rand(10,30),Rand(hi:2*pi)).range(0.4.neg,0.4);
+			var lfoPan=SinOsc.kr(timescale/Rand(10,30),Rand(hi:2*pi)).range(0.5.neg,0.5);
 
 			// calculate the final rate
 			var rate=Lag.kr(lfoRate*(2*lfoForward-1),1)*BufRateScale.kr(buf);
@@ -100,18 +100,18 @@ Engine_Grainchain : CroneEngine {
 			snd=SelectX.ar(Lag.kr(switch,0.05),[snd1,snd2]);
 
 			// apply the volume lfo
-			volume = amp*lfoAmp*EnvGen.ar(Env.new([0,1],[Rand(1,10)],4));
+			volume = lfoAmp*EnvGen.ar(Env.new([0,1],[Rand(1,10)],4));
 			// apply the start/stop envelope
 			volume = volume * EnvGen.ar(Env.adsr(1,1,1,1),gate,doneAction:2);
 
 			// send data to the GUI
-			SendReply.kr(Impulse.kr(10),"/position",[land,player,posStart/frames,posEnd/frames,pos/frames,volume,lfoPan]);
+			SendReply.kr(Impulse.kr(10),"/position",[land,player,posStart/frames,posEnd/frames,LinLin.kr(pos/frames,0,1,1,127).round,LinLin.kr(volume,0,1,1,7).round,lfoPan*2]);
 
 			// do the panning
 			snd=Balance2.ar(snd[0],snd[1],lfoPan);
 
 			// final output
-			snd = snd * volume / 5;
+			snd = snd * volume / 5 * amp;
 			Out.ar(busWet,snd*wet);
 			Out.ar(busDry,snd*(1-wet));
 		}).add;

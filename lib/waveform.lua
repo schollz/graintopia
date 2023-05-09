@@ -14,38 +14,23 @@ function Waveform:init()
   self.is_rendering=false
   self.rendering_name=nil
   self.renders={}
-
-  softcut.buffer_clear()
-  softcut.event_render(function(ch,start,i,s)
-    if self.rendering_name~=nil then
-      print(string.format("[waveform] rendered %s",self.rendering_name))
-      local max_val=0
-      for i,v in ipairs(s) do
-        if v>max_val then
-          max_val=math.abs(v)
-        end
-      end
-      for i,v in ipairs(s) do
-        s[i]=math.abs(v)/max_val
-      end
-      self.renders[self.rendering_name]=s
-      self.rendering_name=nil
-      self.is_rendering=false
-    end
-  end)
 end
 
 function Waveform:load(fname)
+  self.queue=fname
+end
+
+function Waveform:load_()
+  if self.queue==nil or rendering_land>0 then
+    do return end
+  end
+  rendering_land=self.id
+  local fname=self.queue
+  self.queue=nil
+  self.rendering_name=fname
   self.current=fname
   _,self.basename,_=string.match(fname,"(.-)([^\\/]-%.?([^%.\\/]*))$")
-  if self.renders[fname]~=nil then
-    do return end
-  end
-  if self.is_rendering then
-    do return end
-  end
-  self.is_rendering=true
-  self.rendering_name=fname
+  print("[waveform] doing render",fname)
   local ch,samples=audio.file_info(fname)
   local length=samples/48000
   clock.run(function()
@@ -56,7 +41,15 @@ function Waveform:load(fname)
   end)
 end
 
+function Waveform:upload_waveform(s)
+  self.renders[self.rendering_name]=s
+  rendering_land=0
+end
+
 function Waveform:redraw(y,h)
+  if self.queue~=nil then
+    self:load_()
+  end
   if self.current==nil or self.renders[self.current]==nil then
     do return end
   end

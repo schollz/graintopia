@@ -12,7 +12,8 @@ end
 
 function Land:init()
   -- setup waveformer
-  self.waveform=waveform_:new()
+  self.waveform=waveform_:new{id=self.id}
+  self.endpoints={}
 
   local update_boundary=function()
     self:update_boundary()
@@ -21,9 +22,9 @@ function Land:init()
     {id="db",name="db",engine=true,min=-96,max=16,exp=false,div=0.25,default=-6,unit="dB"},
     {id="boundary_start",name="boundary start",min=0,max=127,exp=false,div=0.5,default=0,unit="%",action=update_boundary},
     {id="boundary_width",name="boundary width",min=0,max=127,exp=false,div=0.5,default=127,unit="%",action=update_boundary},
-    {id="total_energy",name="energy",min=1,max=10000,exp=true,div=10,default=100,unit="K",action=function() self:update_energy() end},
+    {id="total_energy",name="energy",min=1,max=10000,exp=true,div=10,default=100,unit="K"},
   }
-  params:add_group("LAND "..self.id,#params_menu+1)
+  -- params:add_group("LAND "..self.id,#params_menu+1)
   params:add_file(self.id.."sample_file","file",_path.audio)
   params:set_action(self.id.."sample_file",function(x)
     local is_dir=function(path)
@@ -53,7 +54,7 @@ function Land:init()
     }
     params:set_action(pid,function(x)
       if pram.engine then
-        engine.set_val(self.id,pram.id,x)
+        engine.land_set(self.id,pram.id,x)
       elseif pram.action then
         pram.action(x)
       end
@@ -70,8 +71,11 @@ function Land:init()
   for i,v in ipairs(self.bars) do
     table.insert(self.ballpits,ballpit_:new{id=self.id,num=v*2})
   end
-  self:update_energy()
   self:update_boundary()
+end
+
+function Land:upload_waveform(s)
+  self.waveform:upload_waveform(s)
 end
 
 function Land:pget(pname)
@@ -100,11 +104,6 @@ function Land:update_boundary()
   end
 end
 
-function Land:update_energy()
-  for _,bp in ipairs(self.ballpits) do
-    bp.total_energy_set=self:pget("total_energy")
-  end
-end
 
 function Land:update()
   local endpoints={0,0,0,0,0,0,0,0,0,0}
@@ -128,19 +127,26 @@ function Land:update()
     end
   end
 
-  engine.land_set_endpoints(self.id,
-    endpoints[1],
-    endpoints[2],
-    endpoints[3],
-    endpoints[4],
-    endpoints[5],
-    endpoints[6],
-    endpoints[7],
-    endpoints[8],
-    endpoints[9],
-    endpoints[10],
-    endpoints[11],
-  endpoints[12])
+  if self.loaded then
+    engine.land_set_endpoints(self.id,
+      endpoints[1],
+      endpoints[2],
+      endpoints[3],
+      endpoints[4],
+      endpoints[5],
+      endpoints[6],
+      endpoints[7],
+      endpoints[8],
+      endpoints[9],
+      endpoints[10],
+      endpoints[11],
+    endpoints[12])
+  end
+
+  self.endpoints={}
+  for i,v in ipairs(endpoints) do
+    table.insert(self.endpoints,util.round(v*128))
+  end
 end
 
 function Land:record(on)
@@ -157,12 +163,16 @@ function Land:record(on)
 end
 
 function Land:load(fname)
+  print("[land:load]",fname)
   self.waveform:load(fname)
   engine.land_load(self.id,fname)
+  self.loaded=true
 end
 
 function Land:enc(k,d)
-  if k==2 then
+  if k==1 then
+    self:pdelta("total_energy",d)
+  elseif k==2 then
     self:pdelta("boundary_start",d)
   elseif k==3 then
     self:pdelta("boundary_width",d)
@@ -176,33 +186,29 @@ end
 function Land:redraw()
   screen.blend_mode(0)
   self.waveform:redraw(32,32)
-  screen.blend_mode(5)
-  local y=10
-  local l=1
-  for _,bp in ipairs(self.ballpits) do
-    pos=bp:positions()
-    for i,_ in ipairs(pos) do
-      if i%2==0 then
-        screen.level(4)
-        screen.rect(util.round(pos[i-1]),y,util.round(pos[i]-pos[i-1]),6)
+  if next(self.endpoints)~=nil then
+    screen.blend_mode(5)
+    local y=10
+    local l=1
+    for i=1,#self.endpoints,2 do
+      screen.level(self.players[l].volume)
+      screen.rect(self.endpoints[i],y,self.endpoints[i+1]-self.endpoints[i],6)
+      screen.fill()
+      if self.players[l].position>0 then
+        -- plot position
+        screen.level(5)
+        screen.rect(self.players[l].position,y,1,6)
         screen.fill()
-        if self.players[l].position>0 then
-          -- plot position
-          screen.level(5)
-          screen.rect(self.players[l].position,y,1,6)
-          screen.fill()
-          -- plot pan
-          screen.level(2)
-          screen.rect(self.players[l].pan,y,3,6)
-          screen.fill()
-        end
-        -- bp.balls[i]:redraw(y+3)
-        -- bp.balls[i-1]:redraw(y+3)
-        y=y+9
-        l=l+1
+        -- plot pan
+        screen.level(2)
+        screen.rect(self.players[l].pan,y,3,6)
+        screen.fill()
       end
+      y=y+9
+      l=l+1
     end
   end
+
   screen.level(10)
   screen.rect(self:pget("boundary_start"),0,1,64)
   screen.fill()
