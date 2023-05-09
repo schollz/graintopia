@@ -87,9 +87,9 @@ Engine_Grainchain : CroneEngine {
 					buf: buf,
 				]).onFree({
 					var timeEnd = Date.getDate;
-					var duration=(timeEnd.rawSeconds-timeStart-rawSeconds);
+					var duration=(timeEnd.rawSeconds-timeStart.rawSeconds);
 					["[record] finished recording loop",fname,"for",duration,"seconds"].postln;
-					Buffer.write(fname,numFrames:duration*server.sampleRate,completionMessage:{
+					buf.write(fname,headerFormat: "wav", sampleFormat: "int16",numFrames:duration*server.sampleRate,completionMessage:{
 						["[record] finished writing",fname].postln;
 						NetAddr("127.0.0.1", 10111).sendMsg("recorded",id,fname);
 					});

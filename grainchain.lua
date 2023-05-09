@@ -8,8 +8,7 @@
 --    ▼ instructions below ▼
 --
 
--- engine.name="grainchain"
-
+engine.name="Grainchain"
 
 ball=include("lib/ball")
 ballpit_=include("lib/ballpit")
@@ -25,6 +24,7 @@ function load_file(file)
 end
 
 function init()
+  os.execute("mkdir -p ".._path.audio.."grainchain/recordings")
   os.execute(_path.code.."grainchain/lib/oscnotify/run.sh &")
 
   -- setup waveformer
@@ -35,6 +35,12 @@ function init()
     oscnotify=function(args)
       print("file edited ok!")
       rerun()
+    end,
+    recorded=function(args)
+      local id=tonumber(args[1])
+      local fname=args[2]
+      print(string.format("[osc-recorded] %s (id %d)",fname,id))
+      -- TODO: load into the current land
     end,
     loop_db=function(args)
       -- local side=tonumber(args[1])
@@ -64,10 +70,15 @@ function init()
   end)
 
   -- testing
-  waveform:load("/home/we/dust/audio/tehn/mancini1.wav")
+  waveform:load("/home/we/dust/audio/boombap1.aif")
 
-  ballpit=ballpit_:new{}
-  land=land_:new{}
+  land=land_:new{id=1}
+
+  clock.run(function()
+    engine.record_start(1,"/home/we/dust/audio/grainchain/recordings/"..os.date('%Y-%m-%d-%H%M%S')..".wav")
+    clock.sleep(1)
+    engine.record_stop()
+  end)
 end
 
 function key(k,z)
@@ -104,8 +115,6 @@ function redraw()
   waveform:redraw(32,32)
   screen.blend_mode(5)
 
-  -- ballpit:update()
-  -- ballpit:redraw()
   land:update()
   land:redraw()
 

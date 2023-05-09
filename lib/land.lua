@@ -100,9 +100,9 @@ function Land:redraw()
       end
     end
   end
-  screen.rect(self.boundary[1],0,1,64)
+  screen.rect(self:pget("boundary_start"),0,1,64)
   screen.fill()
-  screen.rect(self.boundary[1]+self.boundary[2],0,1,64)
+  screen.rect(self:pget("boundary_start")+self:pget("boundary_width"),0,1,64)
   screen.fill()
 end
 
