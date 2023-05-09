@@ -1,5 +1,25 @@
 # grainchain
 
-## todo
+a dedicated amen break script for norns.
 
-- add half-second?
+
+## todo 
+
+- add halfsecond
+
+## Requirements
+
+- norns
+
+## Documentation
+
+
+
+
+## Install
+
+install with
+
+```
+;install https://github.com/schollz/grainchain
+```
