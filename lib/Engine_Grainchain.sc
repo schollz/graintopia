@@ -3,91 +3,42 @@
 // Inherit methods from CroneEngine
 Engine_Grainchain : CroneEngine {
 
-    // Grainchain specific v0.1.0
+	// Grainchain specific v0.1.0
 	var server;
 	var bufs;
 	var buses;
 	var syns;
 	var oscs;
-    var loops;
-    // Grainchain ^
+	var loops;
+	// Grainchain ^
 
-    *new { arg context, doneCallback;
-        ^super.new(context, doneCallback);
-    }
-
-
-	play {
-		arg id;
-        if (bufs.at(id).notNil,{
-            if (loops.at(id).notNil,{
-                ["[ouro] sending done to loop",id].postln;
-                loops.at(id).set(\done,1);
-            });
-            ["[ouro] started playing loop",id].postln;
-            loops.put(id,Synth.before(syns.at("fx"),"looper",[
-                buf: bufs.at(id),
-                busReverb: buses.at("busReverb"),
-                busNoCompress: buses.at("busNoCompress"),
-                busCompress: buses.at("busCompress"),
-            ]).onFree({
-                ["[ouro] stopped playing loop",id].postln;
-            }));
-            NodeWatcher.register(loops.at(id));
-        });
+	*new { arg context, doneCallback;
+		^super.new(context, doneCallback);
 	}
 
-    alloc {
-        // Grainchain specific v0.0.1
-        var server = context.server;
-        var xfade = 1;
+	alloc {
+		// Grainchain specific v0.0.1
+		var server = context.server;
 
 		// basic players
 		SynthDef("fx",{
-			arg busReverb,busCompress,busNoCompress;
+			arg busDry,busWet;
 			var snd;
-			var sndReverb=In.ar(busReverb,2);
-			var sndCompress=In.ar(busCompress,2);
-			var sndNoCompress=In.ar(busNoCompress,2);
-			var in = (SoundIn.ar(0)*\amp2.kr(1)) + (SoundIn.ar(1)*\amp2.kr(1));
-			sndNoCompress = (sndNoCompress+(in*0.8));
-			sndReverb = (sndReverb+(in*0.2));
-			sndCompress=Compander.ar(sndCompress,sndCompress,0.05,slopeAbove:0.1,relaxTime:0.01);
-			sndNoCompress=Compander.ar(sndNoCompress,sndNoCompress,1,slopeAbove:0.1,relaxTime:0.01);
-			sndReverb=Fverb.ar(sndReverb[0],sndReverb[1]);
+			var in = SoundIn.ar([0,1])*(\db_in.kr(0).dbamp);
+			var sndDry = In.ar(busDry,2);
+			var sndWet = In.ar(busWet,2);
+			sndWet = (sndWet+(in*0.2));
+			sndWet=Fverb.ar(sndWet[0],sndWet[1]);
 
-			snd=sndCompress+sndNoCompress+sndReverb;
+			snd = in + sndDry + sndWet;
 			Out.ar(0,snd*Line.ar(0,1,3));
 		}).add;
 
-		SynthDef("looper",{
-			arg id,buf,t_trig=0,busReverb,busCompress,busNoCompress,db=0,done=0;
-            var amp = db.dbamp;
-            var playhead = ToggleFF.kr(t_trig);
-			var snd0 = PlayBuf.ar(1,buf,rate:BufRateScale.ir(buf),loop:1,trigger:1-playhead);
-			var snd1 = PlayBuf.ar(1,buf,rate:BufRateScale.ir(buf),loop:1,trigger:playhead);
-			var snd = SelectX.ar(Lag.kr(playhead,xfade),[snd0,snd1]);
-            var reverbSend = 0.25;
-			snd = snd * amp * EnvGen.ar(Env.adsr(3,1,1,3),1-done,doneAction:2);
-			snd = snd * (LFNoise2.kr(1/Rand(4,6)).range(6.neg,6).dbamp); // amplitude lfo
-			snd = Pan2.ar(snd,LFNoise2.kr(1/Rand(3,8),mul:0.25)); 
-			Out.ar(busCompress,0*snd);
-			Out.ar(busNoCompress,(1-reverbSend)*snd);
-			Out.ar(busReverb,reverbSend*snd);
-		}).add;
-
 		SynthDef("recorder",{
-			arg id,buf,t_trig,busReverb,busCompress,busNoCompress,db=0,done=0,side=0;
-            var amp = db.dbamp;
-            var snd = SoundIn.ar(side);
-            RecordBuf.ar(snd,buf,loop:0,doneAction:2);
-			Out.ar(0,Silent.ar(2));
-		}).add;
-
-		SynthDef("track_input",{
-			arg id,buf,t_trig,busReverb,busCompress,busNoCompress,db=0,done=0,side=0;
-            var snd = SoundIn.ar(side);
-			SendReply.kr(Impulse.kr(10),"/loop_db",[id,Lag.kr(Amplitude.kr(snd),0.5)]);
+			arg buf,gate=1;
+			var snd = SoundIn.ar([0,1]);
+			snd = snd * EnvGen.ar(Env.adsr(1,1,1,1),gate:gate,doneAction:2);
+			RecordBuf.ar(snd,buf,loop:0,doneAction:2);
 			Out.ar(0,Silent.ar(2));
 		}).add;
 
@@ -101,92 +52,66 @@ Engine_Grainchain : CroneEngine {
 
 		server.sync;
 		oscs.put("loop_db",OSCFunc({ |msg|
-			var oscRoute=msg[0];
-			var synNum=msg[1];
-			var dunno=msg[2];
-			var id=msg[3].asInteger;
-			var db=msg[4].asFloat.ampdb;
-			NetAddr("127.0.0.1", 10111).sendMsg("loop_db",id,db);
+			// var oscRoute=msg[0];
+			// var synNum=msg[1];
+			// var dunno=msg[2];
+			// var id=msg[3].asInteger;
+			// var db=msg[4].asFloat.ampdb;
+			// NetAddr("127.0.0.1", 10111).sendMsg("loop_db",id,db);
 		}, '/loop_db'));
 		
 		// define buses
-		buses.put("busCompress",Bus.audio(server,2));
-		buses.put("busNoCompress",Bus.audio(server,2));
+		buses.put("busDry",Bus.audio(server,2));
 		buses.put("busReverb",Bus.audio(server,2));
 		server.sync;
 
-		// define fx
+		// main out
 		syns.put("fx",Synth.tail(server,"fx",[
-            busReverb: buses.at("busReverb"),
-            busNoCompress: buses.at("busNoCompress"),
-            busCompress: buses.at("busCompress"),
-        ]));
-		// syns.put("track_input",Synth.head(server,"track_input"));
-
+			busDry: buses.at("busDry"),
+			busReverb: buses.at("busReverb"),
+		]));
 		server.sync;
+
 		"done loading.".postln;
 
-        this.addCommand("sync","",{ arg msg;
-            loops.keysValuesDo({ arg k, syn;
-                if (syn.isRunning,{
-                    syn.set(\t_trig,1);
-                });
-            });
-        });
+		this.addCommand("record_start","is",{ arg msg;
+			var id=msg[1];
+			var fname=msg[2].asString;
+			var seconds=60;
 
-		this.addCommand("record","ifi",{ arg msg;
-            var id=msg[1];
-            var seconds=msg[2].asFloat+(xfade*1.5);
-			var side=1-msg[3];
-
-            // initiate a routine to automatically start playing loop
-            Routine {
-                var playing = false;
-                seconds.wait;
-                if (loops.at(id).notNil,{
-                    if (loops.at(id).isRunning,{
-                        playing = true;
-                    });
-                });
-                if (playing,{
-                    loops.at(id).set(\buf,bufs.at(id));
-                },{
-                    this.play(id);
-                });
-            }.play;
-
-            // allocate buffer and record the loop
-            Buffer.alloc(server,seconds*server.sampleRate,1,completionMessage:{ arg buf;
-                bufs.put(id,buf);
-				["[ouro] started recording loop",id].postln;
-                syns.put("record"++id,Synth.head(server,"recorder",[
-                    id: id,
-                    buf: buf,
-					side: side,
-                ]).onFree({
-                    ["[ouro] finished recording loop",id].postln;
-                }));
-            });
+			// allocate buffer and record the loop
+			Buffer.alloc(server,seconds*server.sampleRate,2,completionMessage:{ arg buf;
+				var timeStart = Date.getDate;
+				["[record] started recording loop",fname].postln;
+				syns.put("recording",Synth.head(server,"recorder",[
+					buf: buf,
+				]).onFree({
+					var timeEnd = Date.getDate;
+					var duration=(timeEnd.rawSeconds-timeStart-rawSeconds);
+					["[record] finished recording loop",fname,"for",duration,"seconds"].postln;
+					Buffer.write(fname,numFrames:duration*server.sampleRate,completionMessage:{
+						["[record] finished writing",fname].postln;
+						NetAddr("127.0.0.1", 10111).sendMsg("recorded",id,fname);
+					});
+				}));
+				NodeWatcher.register(syns.at("recording"));
+			});
 		});
 
-		this.addCommand("set_loop","isf",{ arg msg;
-            var id=msg[1];
-            var k=msg[2];
-            var v=msg[3];
-            if (syns.at(id).notNil,{
-                if (syns.at(id).isRunning,{
-                    ["[ouro] setting syn",id,k,"=",v].postln;
-                    syns.at(id).set(k,v);
-                });
-            });
-            if (loops.at(id).notNil,{
-                if (loops.at(id).isRunning,{
-                    ["[ouro] setting loop",id,k,"=",v].postln;
-                    loops.at(id).set(k,v);
-                });
-            });
+		this.addCommand("record_stop","",{ arg msg;
+			if (syns.at("recording").notNil,{
+				if (syns.at("recording").isRunning,{
+					syns.at("recording").set(\gate,0);
+				});
+			});
 		});
-    }
+
+		this.addCommand("set_val","isf",{ arg msg;
+			var id=msg[1];
+			var k=msg[2];
+			var v=msg[3];
+		});
+	}
 
 
 	free {
