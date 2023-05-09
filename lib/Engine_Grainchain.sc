@@ -105,7 +105,7 @@ Engine_Grainchain : CroneEngine {
 			volume = volume * EnvGen.ar(Env.adsr(1,1,1,1),gate,doneAction:2);
 
 			// send data to the GUI
-			SendReply.kr(Impulse.kr(10),"/position",[land,player,posStart/frames,posEnd/frames,pos/frames,volume,(lfoPan+1)/2]);
+			SendReply.kr(Impulse.kr(10),"/position",[land,player,posStart/frames,posEnd/frames,pos/frames,volume,lfoPan]);
 
 			// do the panning
 			snd=Balance2.ar(snd[0],snd[1],lfoPan);
