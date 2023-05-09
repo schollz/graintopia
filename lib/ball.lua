@@ -13,7 +13,7 @@ end
 function Ball:init()
   self.mass_scale=10
   self.position=math.random(8,120)
-  self.velocity=self.v or math.random(-100,100)/50
+  self.velocity=self.v or math.random(-100,100)/200
   self.r=self.r or math.random(3,12)
   self.m=self.r*self.r*self.mass_scale
 end
@@ -76,8 +76,8 @@ function Ball:check_collision(other,total_energy,total_energy_set)
   print(total_energy,total_energy_set)
 end
 
-function Ball:redraw()
-  screen.circle(self.position,32,self.r)
+function Ball:redraw(y)
+  screen.circle(self.position,y,self.r/2)
   screen.level(4)
   screen.fill()
 end

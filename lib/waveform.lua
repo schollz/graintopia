@@ -60,7 +60,7 @@ function Waveform:redraw(y,h)
   if self.current==nil or self.renders[self.current]==nil then
     do return end
   end
-  screen.level(5)
+  screen.level(4)
   screen.move(0,y)
   screen.line(129,y)
   screen.stroke()

@@ -11,10 +11,12 @@ function Ballpit:new(args)
 end
 
 function Ballpit:init()
+  self.num=self.num or 6
   self.total_energy=0
-  self.total_energy_set=1000
+  self.total_energy_set=self.total_energy_set or 100
+  self.boundary=self.boundary or {1,128}
   self.balls={}
-  for i=1,6 do
+  for i=1,self.num do
     table.insert(self.balls,ball:new{})
   end
 end
@@ -22,7 +24,7 @@ end
 function Ballpit:update()
   for i,b in ipairs(self.balls) do
     b:update()
-    b:check_boundary_collision(0,128)
+    b:check_boundary_collision(self.boundary[1],self.boundary[2])
     for j,b2 in ipairs(self.balls) do
       if j>i then
         b:check_collision(b2,self.total_energy,self.total_energy_set)
@@ -33,6 +35,14 @@ function Ballpit:update()
   for _,b in ipairs(self.balls) do
     self.total_energy=self.total_energy+0.5*b.velocity*b.velocity*b.m
   end
+end
+
+function Ballpit:positions()
+  local p={}
+  for _,b in ipairs(self.balls) do
+    table.insert(p,b.position)
+  end
+  return p
 end
 
 function Ballpit:redraw()

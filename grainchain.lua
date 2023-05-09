@@ -13,6 +13,7 @@
 
 ball=include("lib/ball")
 ballpit_=include("lib/ballpit")
+land_=include("lib/land")
 waveform_=include("lib/waveform")
 
 function init()
@@ -58,13 +59,19 @@ function init()
   waveform:load("/home/we/dust/audio/tehn/mancini2.wav")
 
   ballpit=ballpit_:new{}
-
+  land=land_:new{}
+  land:set_boundary(30,60)
 end
 
 function key(k,z)
 end
 
 function enc(k,d)
+  if k==2 then
+    land:delta_left(d)
+  elseif k==3 then
+    land:delta_right(d)
+  end
 end
 
 function rerun()
@@ -79,10 +86,12 @@ function redraw()
   screen.clear()
   screen.blend_mode(0)
   waveform:redraw(32,32)
-  screen.blend_mode(2)
+  screen.blend_mode(5)
 
-  ballpit:update()
-  ballpit:redraw()
+  -- ballpit:update()
+  -- ballpit:redraw()
+  land:update()
+  land:redraw()
 
   screen.update()
 end
