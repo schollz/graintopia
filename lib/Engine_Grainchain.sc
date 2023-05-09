@@ -64,7 +64,12 @@ Engine_Grainchain : CroneEngine {
 			var duration=BufDur.kr(buf);
 			var timescale = timescalein / duration * 5;
 			// LFO for the rate (right now its not an LFO)
-			var lfoRate=baseRate*rateMult;//*Select.kr(SinOsc.kr(1/Rand(10,30)).range(0,4.9),[1,0.25,0.5,1,2]);
+			//var lfoRate=baseRate*rateMult;//*Select.kr(SinOsc.kr(1/Rand(10,30)).range(0,4.9),[1,0.25,0.5,1,2]);
+			var lfoRateAmp=Demand.kr(Impulse.kr(0)+Dust.kr(timescale/Rand(10,30)),0,
+				Dwrand([[1,1],[2,0.25],[4,0.06],[0.5,1.5],[0.25,2]],[8,3,1,3,2]/17,inf)
+			);
+			var lfoRate=lfoRateAmp[0];
+			var lfoAmp2=lfoRateAmp[1];
 			// LFO for switching between forward and reverse <-- tinker
 			var lfoForward=Demand.kr(Impulse.kr(timescale/Rand(5,15)),0,Drand([0,1],inf));
 			// LFO for the volume <-- tinker
@@ -115,7 +120,7 @@ Engine_Grainchain : CroneEngine {
 			snd=Balance2.ar(snd[0],snd[1],lfoPan);
 
 			// final output
-			snd = snd * volume / 5 * amp;
+			snd = snd * volume / 5 * amp * lfoAmp2;
 			Out.ar(busWet,snd*wet);
 			Out.ar(busDry,snd*(1-wet));
 		}).add;
