@@ -1,4 +1,4 @@
-# sonicules
+# _--__---_
 
 a dedicated amen break script for norns.
 

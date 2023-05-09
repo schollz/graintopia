@@ -1,6 +1,6 @@
--- sonicules
+-- _--__---_
 --
--- llllllll.co/t/sonicules
+-- llllllll.co/t/_--__---_
 --
 -- layer recordings
 -- @infinitedigits
@@ -29,8 +29,8 @@ recording=false
 shift=false
 
 function init()
-  os.execute("mkdir -p ".._path.audio.."sonicules/recordings")
-  os.execute(_path.code.."sonicules/lib/oscnotify/run.sh &")
+  os.execute("mkdir -p ".._path.audio.."_--__---_/recordings")
+  os.execute(_path.code.."_--__---_/lib/oscnotify/run.sh &")
 
   -- setup softcut renderer
 
