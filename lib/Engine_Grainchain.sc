@@ -209,7 +209,10 @@ Engine_Grainchain : CroneEngine {
 					["[record] finished recording loop",fname,"for",duration,"seconds"].postln;
 					buf.write(fname,headerFormat: "wav", sampleFormat: "int16",numFrames:duration*server.sampleRate,completionMessage:{
 						["[record] finished writing",fname].postln;
-						NetAddr("127.0.0.1", 10111).sendMsg("recorded",id,fname);
+						Routine{
+							1.wait;
+							NetAddr("127.0.0.1", 10111).sendMsg("recorded",id,fname);
+						}.play;
 					});
 				}));
 				NodeWatcher.register(syns.at("recording"));

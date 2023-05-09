@@ -29,11 +29,21 @@ function Land:init()
   params:set_action(self.id.."sample_file",function(x)
     local is_dir=function(path)
       local f=io.open(path,"r")
+      if f==nil then
+        do return false end
+      end
       local ok,err,code=f:read(1)
       f:close()
       return code==21
     end
-    if x~="cancel" and util.file_exists(x) and not is_dir(x) then
+    local file_exists=function(name)
+      local f=io.open(name,"r")
+      if f~=nil then io.close(f) return true else return false end
+    end
+    print(string.format("[sample_file%d] loading '%s'",self.id,x))
+    print("file exists?",file_exists(x))
+    print("is_dir?",is_dir(x))
+    if x~="cancel" and file_exists(x) and (not is_dir(x)) then
       self:load(x)
     end
   end)
@@ -150,14 +160,13 @@ function Land:update()
 end
 
 function Land:record(on)
-  if self.recording then
-    if not on then
-      self.recording=nil
-      engine.record_stop()
-    end
+  if not on then
+    self.recording=nil
+    engine.record_stop()
   else
-    if on then
+    if not self.recording then
       engine.record_start(self.id,"/home/we/dust/audio/grainchain/recordings/"..os.date('%Y-%m-%d-%H%M%S')..".wav")
+      self.recording=true
     end
   end
 end
@@ -217,6 +226,8 @@ function Land:redraw()
 end
 
 return Land
+
+
 
 
 

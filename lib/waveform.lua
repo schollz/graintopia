@@ -67,7 +67,7 @@ function Waveform:redraw(y,h)
   end
 
   screen.blend_mode(0)
-  screen.move(1,7)
+  screen.move(2,5)
   screen.level(15)
   screen.text(self.basename)
 
