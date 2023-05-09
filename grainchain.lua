@@ -15,6 +15,14 @@ ball=include("lib/ball")
 ballpit_=include("lib/ballpit")
 land_=include("lib/land")
 waveform_=include("lib/waveform")
+fileselect=require 'fileselect'
+selecting=false
+function load_file(file)
+  selecting=false
+  if file~="cancel" then
+    waveform:load(file)
+  end
+end
 
 function init()
   os.execute(_path.code.."grainchain/lib/oscnotify/run.sh &")
@@ -56,14 +64,17 @@ function init()
   end)
 
   -- testing
-  waveform:load("/home/we/dust/audio/tehn/mancini2.wav")
+  waveform:load("/home/we/dust/audio/tehn/mancini1.wav")
 
   ballpit=ballpit_:new{}
   land=land_:new{}
-  land:set_boundary(30,60)
 end
 
 function key(k,z)
+  if k==1 and z==1 then
+    selecting=true
+    fileselect.enter(_path.dust,load_file)
+  end
 end
 
 function enc(k,d)
@@ -71,6 +82,8 @@ function enc(k,d)
     land:delta_left(d)
   elseif k==3 then
     land:delta_right(d)
+  elseif k==1 then
+    land:delta_energy(d)
   end
 end
 
@@ -83,6 +96,9 @@ function cleanup()
 end
 
 function redraw()
+  if selecting==true then
+    do return end
+  end
   screen.clear()
   screen.blend_mode(0)
   waveform:redraw(32,32)

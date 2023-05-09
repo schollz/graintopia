@@ -73,7 +73,7 @@ function Ball:check_collision(other,total_energy,total_energy_set)
   end
   self:temperature_adjust(total_energy,total_energy_set)
   other:temperature_adjust(total_energy,total_energy_set)
-  print(total_energy,total_energy_set)
+  -- print(total_energy,total_energy_set)
 end
 
 function Ball:redraw(y)
