@@ -20,6 +20,8 @@ function Land:init()
   end
   local params_menu={
     {id="db",name="db",engine=true,min=-96,max=16,exp=false,div=0.25,default=-6,unit="dB"},
+    {id="wet",name="reverb",engine=true,min=0,max=1,exp=false,div=0.05,default=0.2,unit=""},
+    {id="timescalein",name="timescale",engine=true,min=0,max=10,exp=false,div=0.1,default=1,unit="x"},
     {id="boundary_start",name="boundary start",min=0,max=127,exp=false,div=0.5,default=0,unit="%",action=update_boundary},
     {id="boundary_width",name="boundary width",min=0,max=127,exp=false,div=0.5,default=127,unit="%",action=update_boundary},
     {id="total_energy",name="energy",min=1,max=10000,exp=true,div=10,default=100,unit="K"},

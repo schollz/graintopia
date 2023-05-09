@@ -5,6 +5,7 @@ Engine_Grainchain : CroneEngine {
 
 	// Grainchain specific v0.1.0
 	var server;
+	var params;
 	var bufs;
 	var buses;
 	var syns;
@@ -32,7 +33,10 @@ Engine_Grainchain : CroneEngine {
 					lands.at(land).at(player).set(\gate,0); // turn off
 				});
 			});
-			// TODO update with current volumes, etc
+			// update with current volumes, etc
+			params.at(player).keysValuesDo({ arg k, val;
+				syn.set(k,val);
+			});
 			lands.at(land).put(player,syn);
 			NodeWatcher.register(syn);
 		});
@@ -140,6 +144,7 @@ Engine_Grainchain : CroneEngine {
 
 
 		// initialize variables
+		params = Dictionary.new();
 		syns = Dictionary.new();
 		buses = Dictionary.new();
 		bufs = Dictionary.new();
@@ -149,6 +154,7 @@ Engine_Grainchain : CroneEngine {
 		6.do({arg i;
 			var player = i+1; // 1-index
 			lands.put(player,Dictionary.new());
+			params.put(player,Dictionary.new());
 		});
 
 		server.sync;
@@ -264,6 +270,7 @@ Engine_Grainchain : CroneEngine {
 			var land=msg[1];
 			var k=msg[2].asSymbol;
 			var v=msg[3];
+			params.at(land).put(k,v);
 			6.do({ arg i;
 				var player=i+1;
 				if (lands.at(land).at(player).notNil,{
