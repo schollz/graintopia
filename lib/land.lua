@@ -23,8 +23,19 @@ function Land:init()
     {id="boundary_width",name="boundary width",min=0,max=127,exp=false,div=0.5,default=127,unit="%",action=update_boundary},
     {id="total_energy",name="energy",min=1,max=10000,exp=true,div=10,default=100,unit="K",action=function() self:update_energy() end},
   }
-  params:add_group("LAND "..self.id,#params_menu)
-
+  params:add_group("LAND "..self.id,#params_menu+1)
+  params:add_file(self.id.."sample_file","file",_path.audio)
+  params:set_action(self.id.."sample_file",function(x)
+    local is_dir=function(path)
+      local f=io.open(path,"r")
+      local ok,err,code=f:read(1)
+      f:close()
+      return code==21
+    end
+    if x~="cancel" and util.file_exists(x) and not is_dir(x) then
+      self:load(x)
+    end
+  end)
   for _,pram in ipairs(params_menu) do
     local formatter=pram.formatter
     if formatter==nil and pram.values~=nil then
@@ -57,7 +68,7 @@ function Land:init()
   end
 
   for i,v in ipairs(self.bars) do
-    table.insert(self.ballpits,ballpit_:new{num=v*2})
+    table.insert(self.ballpits,ballpit_:new{id=self.id,num=v*2})
   end
   self:update_energy()
   self:update_boundary()
@@ -84,12 +95,8 @@ function Land:player_set(l,k,v)
 end
 
 function Land:update_boundary()
-  for _,bp in ipairs(self.ballpits) do
-    local e=self:pget("boundary_start")+self:pget("boundary_width")
-    if e>100 then
-      e=100
-    end
-    bp.boundary={self:pget("boundary_start"),e}
+  if self:pget("boundary_start")+self:pget("boundary_width")>127 then
+    self:pset("boundary_width",127-self:pget("boundary_start"))
   end
 end
 
@@ -179,14 +186,16 @@ function Land:redraw()
         screen.level(4)
         screen.rect(util.round(pos[i-1]),y,util.round(pos[i]-pos[i-1]),6)
         screen.fill()
-        -- plot position
-        screen.level(5)
-        screen.rect(self.players[l].position,y,1,6)
-        screen.fill()
-        -- plot pan
-        screen.level(2)
-        screen.rect(self.players[l].pan,y,3,6)
-        screen.fill()
+        if self.players[l].position>0 then
+          -- plot position
+          screen.level(5)
+          screen.rect(self.players[l].position,y,1,6)
+          screen.fill()
+          -- plot pan
+          screen.level(2)
+          screen.rect(self.players[l].pan,y,3,6)
+          screen.fill()
+        end
         -- bp.balls[i]:redraw(y+3)
         -- bp.balls[i-1]:redraw(y+3)
         y=y+9
@@ -202,6 +211,8 @@ function Land:redraw()
 end
 
 return Land
+
+
 
 
 

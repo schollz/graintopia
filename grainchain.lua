@@ -95,7 +95,7 @@ function init()
     end
   end)
 
-  lands[1]:load("/home/we/dust/audio/amenbreak/bamboo2_beats16_bpm145.flac")
+  -- lands[1]:load("/home/we/dust/audio/amenbreak/bamboo2_beats16_bpm145.flac")
 end
 
 
