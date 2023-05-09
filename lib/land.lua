@@ -51,8 +51,11 @@ function Land:init()
 
   self.bars=self.bars or {2,2,2}
   self.ballpits={}
+  self.players={}
   for i,v in ipairs(self.bars) do
     table.insert(self.ballpits,ballpit_:new{num=v*2})
+    table.insert(self.players,{position=0,pan=0,volume=0})
+    table.insert(self.players,{position=0,pan=0,volume=0})
   end
   self:update_energy()
   self:update_boundary()
@@ -68,6 +71,10 @@ end
 
 function Land:pdelta(k,v)
   return params:delta(self.id..k,v)
+end
+
+function Land:player_set(l,k,v)
+  self.players[l][k]=v
 end
 
 function Land:update_boundary()
@@ -127,15 +134,23 @@ function Land:redraw()
   self.waveform:redraw(32,32)
   screen.blend_mode(5)
   local y=10
+  local l=1
   for _,bp in ipairs(self.ballpits) do
     pos=bp:positions()
     for i,_ in ipairs(pos) do
       if i%2==0 then
         screen.rect(pos[i-1],y,pos[i]-pos[i-1],6)
         screen.fill()
+        -- plot position
+        screen.rect(util.linlin(0,1,0,127,self.players[l].position),y,2,6)
+        screen.fill()
+        -- plot pan
+        screen.rect(util.linlin(0,1,0,127,self.players[l].pan),y,12,6)
+        screen.fill()
         -- bp.balls[i]:redraw(y+3)
         -- bp.balls[i-1]:redraw(y+3)
         y=y+9
+        l=l+1
       end
     end
   end
