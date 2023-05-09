@@ -15,7 +15,8 @@ Engine_Grainchain : CroneEngine {
 	landPlay {
 		arg land=1,buf;
 
-		6.do({ arg player;
+		6.do({ arg i;
+			var player=i+1;
 			var syn=Synth.head(server,"looper",[
 				\land,land,
 				\player,player,
@@ -25,13 +26,14 @@ Engine_Grainchain : CroneEngine {
 			]).onFree({
 				("[landPlay] land"+land+", player"+player+"finished.").postln;				
 			});
-			if (lands[land].at(player).notNil,{
-				if (lands[land].at(player).isRunning,{
-					lands[land].at(player).set(\gate,0); // turn off
-				})
-			})
+			("[landPlay] land"+land+", player"+player+"started.").postln;				
+			if (lands.at(land).at(player).notNil,{
+				if (lands.at(land).at(player).isRunning,{
+					lands.at(land).at(player).set(\gate,0); // turn off
+				});
+			});
 			// TODO update with current volumes, etc
-			lands[land].put(player,syn);
+			lands.at(land).put(player,syn);
 			NodeWatcher.register(syn);
 		});
 	}
@@ -52,8 +54,8 @@ Engine_Grainchain : CroneEngine {
 			// variables to store UGens later
 			var amp = db.dbamp;
 			var volume;
-			var switch=0,snd,snd1,snd2,pos,pos1,pos2,posStart,posEnd,index;
-			// store the number of frames and the duraiton
+			var switch=0,snd,snd1,snd2,pos,pos1,pos2,index;
+			// store the number of frames and the duration
 			var frames=BufFrames.kr(buf);
 			var duration=BufDur.kr(buf);
 			var timescale = timescalein / duration * 5;
@@ -144,8 +146,9 @@ Engine_Grainchain : CroneEngine {
 		oscs = Dictionary.new();
 		lands = Dictionary.new();
 		// each land has 6 players
-		6.do({arg player;
-			lands[player] = Dictionary.new();
+		6.do({arg i;
+			var player = i+1; // 1-index
+			lands.put(player,Dictionary.new());
 		});
 
 		server.sync;
@@ -225,6 +228,47 @@ Engine_Grainchain : CroneEngine {
 			var id=msg[1];
 			var k=msg[2];
 			var v=msg[3];
+		});
+
+		
+		this.addCommand("set_player","iisf",{ arg msg;
+			var land=msg[1];
+			var player=msg[2];
+			var k=msg[2].asSymbol;
+			var v=msg[3];
+			if (lands.at(land).at(player).notNil,{
+				if (lands.at(land).at(player).isRunning,{
+					lands.at(land).at(player).set(k,v);
+				});
+			});
+		});
+
+		this.addCommand("land_set_endpoints","iffffffffffff",{ arg msg;
+			var land=msg[1];
+			6.do({arg i;
+				var player=i+1;
+				if (lands.at(land).at(player).notNil,{
+					if (lands.at(land).at(player).isRunning,{
+						lands.at(land).at(player).set(\posStart,msg[player*2]);
+						lands.at(land).at(player).set(\posEnd,msg[player*2+1]);
+					});
+				});
+			});
+		});
+
+		
+		this.addCommand("land_set","isf",{ arg msg;
+			var land=msg[1];
+			var k=msg[2].asSymbol;
+			var v=msg[3];
+			6.do({ arg i;
+				var player=i+1;
+				if (lands.at(land).at(player).notNil,{
+					if (lands.at(land).at(player).isRunning,{
+						lands.at(land).at(player).set(k,v);
+					});
+				});
+			});
 		});
 
 

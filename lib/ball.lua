@@ -58,7 +58,8 @@ function Ball:temperature_adjust(total_energy,total_energy_set)
 end
 
 function Ball:check_collision(other,total_energy,total_energy_set)
-  if math.abs(other.position-self.position)>=math.min(self.r,other.r) then
+  -- if math.abs(other.position-self.position)>=math.min(self.r,other.r) then
+  if math.abs(other.position-self.position)>=2 then
     do return end
   end
   local a=self:elastic(self.m,other.m,self.velocity,other.velocity)
@@ -77,7 +78,7 @@ function Ball:check_collision(other,total_energy,total_energy_set)
 end
 
 function Ball:redraw(y)
-  screen.circle(self.position,y,self.r/2)
+  screen.circle(util.round(self.position),y,self.r/2)
   screen.level(4)
   screen.fill()
 end

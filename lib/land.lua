@@ -52,10 +52,12 @@ function Land:init()
   self.bars=self.bars or {2,2,2}
   self.ballpits={}
   self.players={}
+  for i=1,6 do
+    table.insert(self.players,{position=0,pan=0,volume=0})
+  end
+
   for i,v in ipairs(self.bars) do
     table.insert(self.ballpits,ballpit_:new{num=v*2})
-    table.insert(self.players,{position=0,pan=0,volume=0})
-    table.insert(self.players,{position=0,pan=0,volume=0})
   end
   self:update_energy()
   self:update_boundary()
@@ -63,6 +65,10 @@ end
 
 function Land:pget(pname)
   return params:get(self.id..pname)
+end
+
+function Land:praw(pname)
+  return params:raw(self.id..pname)
 end
 
 function Land:pset(k,v)
@@ -94,10 +100,40 @@ function Land:update_energy()
 end
 
 function Land:update()
-  for i,bp in ipairs(self.ballpits) do
+  local endpoints={0,0,0,0,0,0,0,0,0,0}
+  local j=1
+  for _,bp in ipairs(self.ballpits) do
     bp:update()
+    pos=bp:positions()
+    for i,_ in ipairs(pos) do
+      if i%2==0 then
+        local a=pos[i-1]/127
+        local b=pos[i]/127
+        if a>b then
+          endpoints[j]=b
+          endpoints[j+1]=a
+        else
+          endpoints[j]=a
+          endpoints[j+1]=b
+        end
+        j=j+2
+      end
+    end
   end
-  -- TODO: update the engine
+
+  engine.land_set_endpoints(self.id,
+    endpoints[1],
+    endpoints[2],
+    endpoints[3],
+    endpoints[4],
+    endpoints[5],
+    endpoints[6],
+    endpoints[7],
+    endpoints[8],
+    endpoints[9],
+    endpoints[10],
+    endpoints[11],
+  endpoints[12])
 end
 
 function Land:record(on)
@@ -115,6 +151,7 @@ end
 
 function Land:load(fname)
   self.waveform:load(fname)
+  engine.land_load(self.id,fname)
 end
 
 function Land:enc(k,d)
@@ -139,13 +176,16 @@ function Land:redraw()
     pos=bp:positions()
     for i,_ in ipairs(pos) do
       if i%2==0 then
-        screen.rect(pos[i-1],y,pos[i]-pos[i-1],6)
+        screen.level(4)
+        screen.rect(util.round(pos[i-1]),y,util.round(pos[i]-pos[i-1]),6)
         screen.fill()
         -- plot position
-        screen.rect(util.linlin(0,1,0,127,self.players[l].position),y,2,6)
+        screen.level(5)
+        screen.rect(self.players[l].position,y,1,6)
         screen.fill()
         -- plot pan
-        screen.rect(util.linlin(0,1,0,127,self.players[l].pan),y,12,6)
+        screen.level(2)
+        screen.rect(self.players[l].pan,y,3,6)
         screen.fill()
         -- bp.balls[i]:redraw(y+3)
         -- bp.balls[i-1]:redraw(y+3)
@@ -154,6 +194,7 @@ function Land:redraw()
       end
     end
   end
+  screen.level(10)
   screen.rect(self:pget("boundary_start"),0,1,64)
   screen.fill()
   screen.rect(self:pget("boundary_start")+self:pget("boundary_width"),0,1,64)

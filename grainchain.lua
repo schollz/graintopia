@@ -38,28 +38,28 @@ function init()
     recorded=function(args)
       local id=tonumber(args[1])
       local fname=args[2]
-      print(string.format("[osc-recorded] %s (id %d)",fname,id))
+      -- print(string.format("[osc-recorded] %s (id %d)",fname,id))
       lands[id]:load(fname)
     end,
     position=function(args)
       local id=tonumber(args[1])
       local l=tonumber(args[2])
-      local x=tonumber(args[3])
-      print(string.format("[osc-position] %2.0f-%2.0f: %2.0f",id,l,x))
-      lands[id]:player_set(l,"position",x)
+      local x=util.linlin(0,1,1,127,tonumber(args[3]))
+      -- print(string.format("[osc-position] %2.0f-%2.0f: %2.0f",id,l,x))
+      lands[id]:player_set(l,"position",util.round(x))
     end,
     pan=function(args)
       local id=tonumber(args[1])
       local l=tonumber(args[2])
-      local x=tonumber(args[3])
-      print(string.format("[osc-pan] %2.0f-%2.0f: %2.0f",id,l,x))
-      lands[id]:player_set(l,"pan",x)
+      local x=util.linlin(-1,1,1,127,tonumber(args[3]))
+      -- print(string.format("[osc-pan] %2.0f-%2.0f: %2.0f",id,l,x))
+      lands[id]:player_set(l,"pan",util.round(x))
     end,
     volume=function(args)
       local id=tonumber(args[1])
       local l=tonumber(args[2])
       local x=tonumber(args[3])
-      print(string.format("[osc-volume] %2.0f-%2.0f: %2.0f",id,l,x))
+      -- print(string.format("[osc-volume] %2.0f-%2.0f: %2.0f",id,l,x))
       lands[id]:player_set(l,"volume",x)
     end,
     loop_db=function(args)
@@ -90,15 +90,12 @@ function init()
   clock.run(function()
     while true do
       clock.sleep(1/15)
+      lands[params:get("land")]:update()
       redraw()
     end
   end)
 
-  clock.run(function()
-    engine.record_start(1,"/home/we/dust/audio/grainchain/recordings/"..os.date('%Y-%m-%d-%H%M%S')..".wav")
-    clock.sleep(1)
-    engine.record_stop()
-  end)
+  lands[1]:load("/home/we/dust/audio/amenbreak/bamboo2_beats16_bpm145.flac")
 end
 
 
@@ -124,8 +121,6 @@ function redraw()
   end
   screen.clear()
 
-
-  lands[params:get("land")]:update()
   lands[params:get("land")]:redraw()
 
   screen.update()
