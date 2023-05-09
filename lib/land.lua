@@ -11,14 +11,16 @@ function Land:new(args)
 end
 
 function Land:init()
+  -- setup waveformer
+  self.waveform=waveform_:new()
 
   local update_boundary=function()
     self:update_boundary()
   end
   local params_menu={
     {id="db",name="db",engine=true,min=-96,max=16,exp=false,div=0.25,default=-6,unit="dB"},
-    {id="boundary_start",name="boundary start",min=0,max=100,exp=false,div=0.01,default=0,unit="%",action=update_boundary},
-    {id="boundary_width",name="boundary width",min=0,max=100,exp=false,div=0.01,default=100,unit="%",action=update_boundary},
+    {id="boundary_start",name="boundary start",min=0,max=127,exp=false,div=0.1,default=0,unit="%",action=update_boundary},
+    {id="boundary_width",name="boundary width",min=0,max=127,exp=false,div=0.1,default=127,unit="%",action=update_boundary},
     {id="total_energy",name="energy",min=1,max=10000,exp=true,div=10,default=100,unit="K",action=function() self:update_energy() end},
   }
   params:add_group("LAND "..self.id,#params_menu)
@@ -70,7 +72,11 @@ end
 
 function Land:update_boundary()
   for _,bp in ipairs(self.ballpits) do
-    bp.boundary={self:pget("boundary_start"),self:pget("boundary_start")+self:pget("boundary_width")}
+    local e=self:pget("boundary_start")+self:pget("boundary_width")
+    if e>100 then
+      e=100
+    end
+    bp.boundary={self:pget("boundary_start"),e}
   end
 end
 
@@ -84,9 +90,42 @@ function Land:update()
   for i,bp in ipairs(self.ballpits) do
     bp:update()
   end
+  -- TODO: update the engine
+end
+
+function Land:record(on)
+  if self.recording then
+    if not on then
+      self.recording=nil
+      engine.record_stop()
+    end
+  else
+    if on then
+      engine.record_start(self.id,"/home/we/dust/audio/grainchain/recordings/"..os.date('%Y-%m-%d-%H%M%S')..".wav")
+    end
+  end
+end
+
+function Land:load(fname)
+  self.waveform:load(fname)
+end
+
+function Land:enc(k,d)
+  if k==2 then
+    self:pdelta("boundary_start",d)
+  elseif k==3 then
+    self:pdelta("boundary_width",d)
+  end
+end
+
+function Land:key(k,z)
+
 end
 
 function Land:redraw()
+  screen.blend_mode(0)
+  self.waveform:redraw(32,32)
+  screen.blend_mode(5)
   local y=10
   for _,bp in ipairs(self.ballpits) do
     pos=bp:positions()

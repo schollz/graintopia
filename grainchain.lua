@@ -27,8 +27,7 @@ function init()
   os.execute("mkdir -p ".._path.audio.."grainchain/recordings")
   os.execute(_path.code.."grainchain/lib/oscnotify/run.sh &")
 
-  -- setup waveformer
-  waveform=waveform_:new()
+
 
   -- setup osc
   osc_fun={
@@ -40,7 +39,7 @@ function init()
       local id=tonumber(args[1])
       local fname=args[2]
       print(string.format("[osc-recorded] %s (id %d)",fname,id))
-      -- TODO: load into the current land
+      lands[id]:load(fname)
     end,
     loop_db=function(args)
       -- local side=tonumber(args[1])
@@ -58,6 +57,11 @@ function init()
     end
   end
 
+  params:add_number("land","land",1,4,1)
+  lands={}
+  for i=1,1 do
+    table.insert(lands,land_:new{id=i})
+  end
   params:default()
   params:bang()
 
@@ -69,11 +73,6 @@ function init()
     end
   end)
 
-  -- testing
-  waveform:load("/home/we/dust/audio/boombap1.aif")
-
-  land=land_:new{id=1}
-
   clock.run(function()
     engine.record_start(1,"/home/we/dust/audio/grainchain/recordings/"..os.date('%Y-%m-%d-%H%M%S')..".wav")
     clock.sleep(1)
@@ -81,21 +80,13 @@ function init()
   end)
 end
 
+
 function key(k,z)
-  if k==1 and z==1 then
-    selecting=true
-    fileselect.enter(_path.dust,load_file)
-  end
+  lands[params:get("land")]:key(k,z)
 end
 
 function enc(k,d)
-  if k==2 then
-    land:delta_left(d)
-  elseif k==3 then
-    land:delta_right(d)
-  elseif k==1 then
-    land:delta_energy(d)
-  end
+  lands[params:get("land")]:enc(k,d)
 end
 
 function rerun()
@@ -111,13 +102,17 @@ function redraw()
     do return end
   end
   screen.clear()
-  screen.blend_mode(0)
-  waveform:redraw(32,32)
-  screen.blend_mode(5)
 
-  land:update()
-  land:redraw()
+
+  lands[params:get("land")]:update()
+  lands[params:get("land")]:redraw()
 
   screen.update()
 end
+
+
+
+
+
+
 
