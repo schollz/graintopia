@@ -1,9 +1,9 @@
-// Engine_Grainchain
+// Engine_Sonicules
 
 // Inherit methods from CroneEngine
-Engine_Grainchain : CroneEngine {
+Engine_Sonicules : CroneEngine {
 
-	// Grainchain specific v0.1.0
+	// Sonicules specific v0.1.0
 	var server;
 	var params;
 	var bufs;
@@ -11,7 +11,7 @@ Engine_Grainchain : CroneEngine {
 	var syns;
 	var oscs;
 	var lands;
-	// Grainchain ^
+	// Sonicules ^
 
 	landPlay {
 		arg land=1,buf;
@@ -47,7 +47,7 @@ Engine_Grainchain : CroneEngine {
 	}
 
 	alloc {
-		// Grainchain specific v0.0.1
+		// Sonicules specific v0.0.1
 		var server = context.server;
 
 		// looper 

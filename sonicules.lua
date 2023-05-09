@@ -1,6 +1,6 @@
--- grainchain
+-- sonicules
 --
--- llllllll.co/t/grainchain
+-- llllllll.co/t/sonicules
 --
 -- layer recordings
 -- @infinitedigits
@@ -8,7 +8,7 @@
 --    ▼ instructions below ▼
 --
 
-engine.name="Grainchain"
+engine.name="Sonicules"
 
 ball=include("lib/ball")
 ballpit_=include("lib/ballpit")
@@ -29,8 +29,8 @@ recording=false
 shift=false
 
 function init()
-  os.execute("mkdir -p ".._path.audio.."grainchain/recordings")
-  os.execute(_path.code.."grainchain/lib/oscnotify/run.sh &")
+  os.execute("mkdir -p ".._path.audio.."sonicules/recordings")
+  os.execute(_path.code.."sonicules/lib/oscnotify/run.sh &")
 
   -- setup softcut renderer
 

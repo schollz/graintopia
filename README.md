@@ -1,4 +1,4 @@
-# grainchain
+# sonicules
 
 a dedicated amen break script for norns.
 
@@ -21,5 +21,5 @@ a dedicated amen break script for norns.
 install with
 
 ```
-;install https://github.com/schollz/grainchain
+;install https://github.com/schollz/sonicules
 ```
