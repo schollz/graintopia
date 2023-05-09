@@ -13,8 +13,8 @@
 
 ball=include("lib/ball")
 ballpit_=include("lib/ballpit")
-land_=include("lib/land")
 waveform_=include("lib/waveform")
+land_=include("lib/land")
 fileselect=require 'fileselect'
 selecting=false
 function load_file(file)
