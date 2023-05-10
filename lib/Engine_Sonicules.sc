@@ -66,14 +66,14 @@ Engine_Sonicules : CroneEngine {
 			// LFO for the rate (right now its not an LFO)
 			//var lfoRate=baseRate*rateMult;//*Select.kr(SinOsc.kr(1/Rand(10,30)).range(0,4.9),[1,0.25,0.5,1,2]);
 			var lfoRateAmp=Demand.kr(Impulse.kr(0)+Dust.kr(timescale/Rand(10,30)),0,
-				Dwrand([0,1,2,3,4,5],[16,6,3,6,4]/35,inf)
+				Dwrand([0,1,2,3,4,5],[14,8,3,6,4]/35,inf)
 			);
 			var lfoRate=Select.kr(lfoRateAmp,[1,2  ,4,   0.5, 0.25]);
-			var lfoAmp2=Select.kr(lfoRateAmp,[1,0.1,0.01,1.5,   2]);
+			var lfoAmp2=Select.kr(lfoRateAmp,[1,0.5,0.2,1.25, 1.5]);
 			// LFO for switching between forward and reverse <-- tinker
 			var lfoForward=Demand.kr(Impulse.kr(timescale/Rand(5,15)),0,Drand([0,1],inf));
 			// LFO for the volume <-- tinker
-			var lfoAmp=SinOsc.kr(timescale/Rand(10,30),Rand(hi:2*pi)).range(0.5,1);
+			var lfoAmp=SinOsc.kr(timescale/Rand(5,10),Rand(hi:2*pi)).range(0.25,1);
 			// LFO for the panning <-- tinker
 			var lfoPan=SinOsc.kr(timescale/Rand(10,30),Rand(hi:2*pi)).range(0.5.neg,0.5);
 
@@ -100,9 +100,7 @@ Engine_Sonicules : CroneEngine {
 
 			// send out a trigger anytime the position is outside the window
 			LocalOut.kr(
-				Changed.kr(Stepper.kr(Impulse.kr(
-					
-				),max:1000000000,
+				Changed.kr(Stepper.kr(Impulse.kr(10),max:1000000000,
 					step:(pos>posEnd)+(pos<posStart)
 				))
 			);
@@ -118,7 +116,7 @@ Engine_Sonicules : CroneEngine {
 			volume = volume * EnvGen.ar(Env.adsr(Rand(1,3),1,1,Rand(1,3)),ampNum);
 
 			// send data to the GUI
-			SendReply.kr(Impulse.kr(10),"/position",[land,player,posStart/frames,posEnd/frames,LinLin.kr(pos/frames,0,1,1,127).round,LinLin.kr(volume,0,1,1,7).round,lfoPan*2]);
+			SendReply.kr(Impulse.kr(10),"/position",[land,player,posStart/frames,posEnd/frames,LinLin.kr(pos/frames,0,1,1,127).round,LinLin.kr(volume,0,1,1,8).round,lfoPan*2]);
 
 			// do the panning
 			snd=Balance2.ar(snd[0],snd[1],lfoPan);
