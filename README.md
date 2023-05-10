@@ -1,6 +1,6 @@
 # _--__---_
 
-a dedicated amen break script for norns.
+a wip.
 
 
 ## todo 
@@ -15,11 +15,10 @@ a dedicated amen break script for norns.
 
 
 
-
 ## Install
 
 install with
 
 ```
-;install https://github.com/schollz/sonicules
+;install https://github.com/schollz/_--__---_
 ```

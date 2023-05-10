@@ -66,7 +66,7 @@ Engine_Sonicules : CroneEngine {
 			// LFO for the rate (right now its not an LFO)
 			//var lfoRate=baseRate*rateMult;//*Select.kr(SinOsc.kr(1/Rand(10,30)).range(0,4.9),[1,0.25,0.5,1,2]);
 			var lfoRateAmp=Demand.kr(Impulse.kr(0)+Dust.kr(timescale/Rand(10,30)),0,
-				Dwrand([[1,1],[2,0.25],[4,0.06],[0.5,1.5],[0.25,2]],[8,3,1,3,2]/17,inf)
+				Dwrand([[1,1],[2,0.05],[4,0.01],[0.5,2],[0.25,3]],[16,6,1,6,4]/33,inf)
 			);
 			var lfoRate=lfoRateAmp[0];
 			var lfoAmp2=lfoRateAmp[1];
@@ -124,7 +124,7 @@ Engine_Sonicules : CroneEngine {
 			snd=Balance2.ar(snd[0],snd[1],lfoPan);
 
 			// final output
-			snd = snd * volume / 5 * amp * lfoAmp2;
+			snd = snd * volume / 15 * amp * lfoAmp2;
 			Out.ar(busWet,snd*wet);
 			Out.ar(busDry,snd*(1-wet));
 		}).add;
@@ -146,7 +146,7 @@ Engine_Sonicules : CroneEngine {
 		SynthDef("recorder",{
 			arg buf,gate=1;
 			var snd = SoundIn.ar([0,1]);
-			snd = snd * EnvGen.ar(Env.adsr(1,1,1,1),gate:gate,doneAction:2);
+			snd = snd * EnvGen.ar(Env.adsr(0.05,1,1,0.05),gate:gate,doneAction:2);
 			RecordBuf.ar(snd,buf,loop:0,doneAction:2);
 			Out.ar(0,Silent.ar(2));
 		}).add;

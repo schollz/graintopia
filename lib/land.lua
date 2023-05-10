@@ -168,7 +168,7 @@ function Land:record(on)
     engine.record_stop()
   else
     if not self.recording then
-      engine.record_start(self.id,"/home/we/dust/audio/sonicules/recordings/"..os.date('%Y-%m-%d-%H%M%S')..".wav")
+      engine.record_start(self.id,"/home/we/dust/audio/_--__---_/recordings/"..os.date('%Y-%m-%d-%H%M%S')..".wav")
       self.recording=true
     end
   end
@@ -196,6 +196,16 @@ function Land:key(k,z)
 end
 
 function Land:redraw()
+  if not self.loaded then
+    screen.level(5)
+    screen.move(64,22)
+    screen.text_center("k1+k2 to load sample")
+    screen.move(64,32)
+    screen.text_center("or")
+    screen.move(64,42)
+    screen.text_center("k1+k3 to record sample")
+    do return end
+  end
   screen.blend_mode(0)
   self.waveform:redraw(32,32)
   if next(self.endpoints)~=nil then

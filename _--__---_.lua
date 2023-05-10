@@ -2,11 +2,17 @@
 --
 -- llllllll.co/t/_--__---_
 --
--- layer recordings
+-- underdash
 -- @infinitedigits
 --
 --    ▼ instructions below ▼
 --
+-- k1 shifts
+-- k2/k3 navigates
+-- e2/e3 boundaries
+-- e1 lifts
+-- k1+k2 loads
+-- k1+k3 records
 
 engine.name="Sonicules"
 
@@ -19,7 +25,7 @@ selecting=false
 function load_file(file)
   selecting=false
   if file~="cancel" then
-    waveform:load(file)
+    lands[params:get("land")]:load(file)
   end
 end
 
@@ -134,15 +140,16 @@ function init()
   end)
 
   --debug
-  show_message("welcome")
-  params:set("1sample_file","/home/we/dust/audio/windchimes.wav")
-
-  -- clock.run(function()
-  --   clock.sleep(1)
-  --   recording_start()
-  --   clock.sleep(2)
-  --   recording_stop()
-  -- end)
+  if not util.file_exists(_path.data.."_--__---_/first") then
+    show_message("_--__---_ demo",5)
+    params:set("1sample_file","/home/we/dust/code/_--__---_/lib/piano_cm.flac")
+    params:set("1boundary_start",15)
+    params:set("1boundary_width",15)
+    params:set("2sample_file","/home/we/dust/code/_--__---_/lib/choir_cm.flac")
+    params:set("2boundary_start",27.6)
+    params:set("2boundary_width",13.2)
+    os.execute("touch ".._path.data.."_--__---_/first")
+  end
 end
 
 function recording_start()
@@ -164,17 +171,22 @@ function recording_stop()
 end
 
 function key(k,z)
-  if recording and z==1 then
-    recording_stop()
-    do return end
-  end
+
   if k==1 then
     shift=z==1
   else
+    if recording and z==1 then
+      recording_stop()
+      do return end
+    end
     if shift then
       if k==3 and z==1 then
         -- do recording
         recording_start()
+      elseif k==2 and z==1 then
+        fileselect.enter(_path.dust,load_file)
+        selecting=true
+        shift=false
       end
     else
       if z==1 then
