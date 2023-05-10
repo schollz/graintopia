@@ -78,7 +78,7 @@ Engine_Sonicules : CroneEngine {
 			var lfoPan=SinOsc.kr(timescale/Rand(10,30),Rand(hi:2*pi)).range(0.5.neg,0.5);
 
 			// calculate the final rate
-			var rate=Lag.kr(lfoRate*(2*lfoForward-1),1)*BufRateScale.kr(buf);
+			var rate=Lag.kr(lfoRate*(2*lfoForward-1),Rand(0.5,1.5))*BufRateScale.kr(buf);
 
 			// set the start/end points
 			posStart = Clip.kr(LinLin.kr(posStart,0,1,0,frames),1024,frames-10240);
@@ -124,7 +124,7 @@ Engine_Sonicules : CroneEngine {
 			snd=Balance2.ar(snd[0],snd[1],lfoPan);
 
 			// final output
-			snd = snd * volume / 15 * amp * lfoAmp2;
+			snd = snd * volume / 15 * amp * Lag.kr(lfoAmp2,Rand(0.1,0.7));
 			Out.ar(busWet,snd*wet);
 			Out.ar(busDry,snd*(1-wet));
 		}).add;
