@@ -200,7 +200,7 @@ function Land:redraw()
   self.waveform:redraw(32,32)
   if next(self.endpoints)~=nil then
     screen.blend_mode(5)
-    local y=10
+    local y=8
     local l=1
     for i=1,#self.endpoints,2 do
       screen.level(self.players[l].volume)
@@ -208,23 +208,23 @@ function Land:redraw()
       screen.fill()
       if self.players[l].position>0 then
         -- plot position
-        screen.level(5)
+        screen.level(6)
         screen.rect(self.players[l].position,y,1,6)
         screen.fill()
-        -- plot pan
-        screen.level(2)
-        screen.rect(self.players[l].pan,y,3,6)
-        screen.fill()
+        -- -- plot pan
+        -- screen.level(2)
+        -- screen.rect(self.players[l].pan,y,3,6)
+        -- screen.fill()
       end
       y=y+9
       l=l+1
     end
   end
-
+  screen.update()
   screen.level(10)
-  screen.rect(self:pget("boundary_start"),6,1,56)
+  screen.rect(self:pget("boundary_start"),7,1,54)
   screen.fill()
-  screen.rect(self:pget("boundary_start")+self:pget("boundary_width"),6,1,56)
+  screen.rect(self:pget("boundary_start")+self:pget("boundary_width"),7,1,54)
   screen.fill()
 end
 
