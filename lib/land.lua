@@ -195,15 +195,18 @@ function Land:key(k,z)
 
 end
 
+function Land:show_help()
+  screen.level(5)
+  screen.move(64,22)
+  screen.text_center("k1+k2 to load sample")
+  screen.move(64,32)
+  screen.text_center("or")
+  screen.move(64,42)
+  screen.text_center("k1+k3 to record sample")
+end
 function Land:redraw()
   if not self.loaded then
-    screen.level(5)
-    screen.move(64,22)
-    screen.text_center("k1+k2 to load sample")
-    screen.move(64,32)
-    screen.text_center("or")
-    screen.move(64,42)
-    screen.text_center("k1+k3 to record sample")
+    self:show_help()
     do return end
   end
   screen.blend_mode(0)
@@ -236,6 +239,9 @@ function Land:redraw()
   screen.fill()
   screen.rect(self:pget("boundary_start")+self:pget("boundary_width"),7,1,54)
   screen.fill()
+  if shift then
+    self:show_help()
+  end
 end
 
 return Land
