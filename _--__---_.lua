@@ -7,12 +7,15 @@
 --
 --    ▼ instructions below ▼
 --
--- k1 shifts
 -- k2/k3 navigates
--- e2/e3 boundaries
 -- e1 lifts
+-- e2/e3 boundaries
+-- k1 shifts
 -- k1+k2 loads
 -- k1+k3 records
+-- k1+e1 timescale 
+-- k1+e2 scrubs favs
+-- k2+e3 creates favs
 
 engine.name="Sonicules"
 
@@ -155,7 +158,7 @@ function init()
     -- os.execute("touch ".._path.data.."_--__---_/first")
     -- show_message("_--__---_ demo",5)
   end
-  params:set("1favorites",json.encode({list={{12,23},{34,10}},current=0}))
+  params:set("1favorites",json.encode({{12,23},{34,10}})
 end
 
 function recording_start()
