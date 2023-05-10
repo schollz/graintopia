@@ -19,11 +19,12 @@ function Land:init()
     self:update_boundary()
   end
   local params_menu={
+    {id="bars",name="__",min=0,max=6,exp=false,div=1,default=6,unit="",action=function(x) engine.land_set_num(self.id,x) end},
     {id="db",name="db",engine=true,min=-96,max=16,exp=false,div=0.25,default=-6,unit="dB"},
     {id="wet",name="reverb",engine=true,min=0,max=1,exp=false,div=0.05,default=0.2,unit=""},
     {id="timescalein",name="timescale",engine=true,min=0,max=10,exp=false,div=0.1,default=1,unit="x"},
-    {id="boundary_start",name="boundary start",min=0,max=127,exp=false,div=0.5,default=0,unit="%",action=update_boundary},
-    {id="boundary_width",name="boundary width",min=0,max=127,exp=false,div=0.5,default=127,unit="%",action=update_boundary},
+    {id="boundary_start",name="boundary start",min=0,max=127,exp=false,div=0.2,default=0,unit="%",action=update_boundary},
+    {id="boundary_width",name="boundary width",min=0,max=127,exp=false,div=0.2,default=127,unit="%",action=update_boundary},
     {id="total_energy",name="energy",min=1,max=10000,exp=true,div=10,default=100,unit="K"},
   }
   -- params:add_group("LAND "..self.id,#params_menu+1)
@@ -182,7 +183,7 @@ end
 
 function Land:enc(k,d)
   if k==1 then
-    self:pdelta("total_energy",d)
+    self:pdelta("bars",d)
   elseif k==2 then
     self:pdelta("boundary_start",d)
   elseif k==3 then
@@ -221,9 +222,9 @@ function Land:redraw()
   end
 
   screen.level(10)
-  screen.rect(self:pget("boundary_start"),0,1,64)
+  screen.rect(self:pget("boundary_start"),6,1,56)
   screen.fill()
-  screen.rect(self:pget("boundary_start")+self:pget("boundary_width"),0,1,64)
+  screen.rect(self:pget("boundary_start")+self:pget("boundary_width"),6,1,56)
   screen.fill()
 end
 

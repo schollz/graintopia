@@ -54,7 +54,7 @@ Engine_Sonicules : CroneEngine {
 
 		SynthDef("looper",{
 			// main arguments
-			arg busWet,busDry,wet=0.5,buf,land,player,baseRate=1.0,rateMult=1.0,db=0.0,timescalein=1,posStart=0,posEnd=1,gate=1;
+			arg busWet,busDry,wet=0.5,buf,land,player,baseRate=1.0,rateMult=1.0,db=0.0,timescalein=1,posStart=0,posEnd=1,gate=1,ampNum=1;
 			// variables to store UGens later
 			var amp = Lag.kr(db.dbamp,1);
 			var volume;
@@ -100,7 +100,9 @@ Engine_Sonicules : CroneEngine {
 
 			// send out a trigger anytime the position is outside the window
 			LocalOut.kr(
-				Changed.kr(Stepper.kr(Impulse.kr(20),max:1000000000,
+				Changed.kr(Stepper.kr(Impulse.kr(
+					
+				),max:1000000000,
 					step:(pos>posEnd)+(pos<posStart)
 				))
 			);
@@ -112,6 +114,8 @@ Engine_Sonicules : CroneEngine {
 			volume = lfoAmp*EnvGen.ar(Env.new([0,1],[Rand(1,10)],4));
 			// apply the start/stop envelope
 			volume = volume * EnvGen.ar(Env.adsr(1,1,1,1),gate,doneAction:2);
+			// apply num amp 
+			volume = volume * EnvGen.ar(Env.adsr(Rand(1,3),1,1,Rand(1,3)),ampNum);
 
 			// send data to the GUI
 			SendReply.kr(Impulse.kr(10),"/position",[land,player,posStart/frames,posEnd/frames,LinLin.kr(pos/frames,0,1,1,127).round,LinLin.kr(volume,0,1,1,7).round,lfoPan*2]);
@@ -281,6 +285,25 @@ Engine_Sonicules : CroneEngine {
 				if (lands.at(land).at(player).notNil,{
 					if (lands.at(land).at(player).isRunning,{
 						lands.at(land).at(player).set(k,v);
+					});
+				});
+			});
+		});
+		
+		this.addCommand("land_set_num","ii",{ arg msg;
+			var land=msg[1];
+			var num=msg[2];
+			6.do({ arg i;
+				var player=i+1;
+				if (lands.at(land).at(player).notNil,{
+					if (lands.at(land).at(player).isRunning,{
+						if (player<=num,{
+							1.postln;
+							lands.at(land).at(player).set(\ampNum,1);
+						},{
+							0.postln;
+							lands.at(land).at(player).set(\ampNum,0);
+						});
 					});
 				});
 			});
