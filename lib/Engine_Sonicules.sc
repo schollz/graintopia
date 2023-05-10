@@ -66,10 +66,10 @@ Engine_Sonicules : CroneEngine {
 			// LFO for the rate (right now its not an LFO)
 			//var lfoRate=baseRate*rateMult;//*Select.kr(SinOsc.kr(1/Rand(10,30)).range(0,4.9),[1,0.25,0.5,1,2]);
 			var lfoRateAmp=Demand.kr(Impulse.kr(0)+Dust.kr(timescale/Rand(10,30)),0,
-				Dwrand([[1,1],[2,0.05],[4,0.01],[0.5,2],[0.25,3]],[16,6,1,6,4]/33,inf)
+				Dwrand([0,1,2,3,4,5],[16,6,3,6,4]/35,inf)
 			);
-			var lfoRate=lfoRateAmp[0];
-			var lfoAmp2=lfoRateAmp[1];
+			var lfoRate=Select.kr(lfoRateAmp,[1,2  ,4,   0.5, 0.25]);
+			var lfoAmp2=Select.kr(lfoRateAmp,[1,0.1,0.01,1.5,   2]);
 			// LFO for switching between forward and reverse <-- tinker
 			var lfoForward=Demand.kr(Impulse.kr(timescale/Rand(5,15)),0,Drand([0,1],inf));
 			// LFO for the volume <-- tinker

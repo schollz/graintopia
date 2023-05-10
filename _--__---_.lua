@@ -35,6 +35,7 @@ recording=false
 shift=false
 
 function init()
+  norns.enc.sens(1,16)
   os.execute("mkdir -p ".._path.audio.."_--__---_/recordings")
   os.execute(_path.code.."_--__---_/lib/oscnotify/run.sh &")
 
