@@ -14,20 +14,35 @@ function Land:init()
   -- setup waveformer
   self.waveform=waveform_:new{id=self.id}
   self.endpoints={}
+  self.favorites={}
 
   local update_boundary=function()
     self:update_boundary()
   end
   local params_menu={
-    {id="bars",name="__",min=0,max=6,exp=false,div=1,default=6,unit="",action=function(x) engine.land_set_num(self.id,x) end},
     {id="db",name="db",engine=true,min=-96,max=16,exp=false,div=0.25,default=-6,unit="dB"},
+    {id="bars",name="grains",min=0,max=6,exp=false,div=1,default=6,unit="",action=function(x) engine.land_set_num(self.id,x) end},
     {id="wet",name="reverb",engine=true,min=0,max=1,exp=false,div=0.05,default=0.2,unit=""},
-    {id="timescalein",name="timescale",engine=true,min=0,max=10,exp=false,div=0.1,default=1,unit="x"},
     {id="boundary_start",name="boundary start",min=0,max=127,exp=false,div=0.2,default=0,unit="%",action=update_boundary},
     {id="boundary_width",name="boundary width",min=0,max=127,exp=false,div=0.2,default=127,unit="%",action=update_boundary},
-    {id="total_energy",name="energy",min=1,max=10000,exp=true,div=10,default=100,unit="K"},
+    {id="timescalein",name="timescale",engine=true,min=0,max=10,exp=false,div=0.1,default=1,unit="x"},
+    {id="total_energy",name="temperature",min=1,max=10000,exp=true,div=10,default=100,unit="K"},
   }
   -- params:add_group("LAND "..self.id,#params_menu+1)
+  params:add_text(self.id.."favorites","favorites","")
+  params:set_action(self.id.."favorites",function(x)
+    if self.noupdate then 
+      do return end 
+    end
+    if x=="" then
+      self.favorites={}
+      do return end
+    end
+    local data=json.decode(x)
+    if data~=nil and data.list~=nil then
+      self.favorites=data
+    end
+  end)
   params:add_file(self.id.."sample_file","file",_path.audio)
   params:set_action(self.id.."sample_file",function(x)
     local is_dir=function(path)
@@ -118,6 +133,7 @@ function Land:update_boundary()
 end
 
 
+
 function Land:update()
   local endpoints={0,0,0,0,0,0,0,0,0,0}
   local j=1
@@ -181,13 +197,98 @@ function Land:load(fname)
   self.loaded=true
 end
 
+function Land:update_favorites()
+  -- sort favorites
+  table.sort(self.favorites,function(a,b)
+    return a[1]<b[1]
+  end)
+  self.noupdate=true 
+  params:set(self.id.."favorites",json.encode(self.favorites))
+  self.noupdate=nil
+end
+
+function Land:add_favorite()
+  -- do favorite position
+  table.insert(self.favorites,{self:pget("boundary_start"),self:pget("boundary_width")})
+  self:update_favorites()
+end
+
+function Land:remove_favorite(j)
+  local list={}
+  for i,v in ipairs(self.favorites) do
+    if i==j then
+    else
+      table.insert(list,v)
+    end
+  end
+  self.favorites=list
+  self:update_favorites()
+end
+
+function Land:is_favorite()
+  local x=self:pget("boundary_start")
+  for i,v in ipairs(self.favorites) do
+    if v[1]==x then
+      do return i end
+    end
+  end
+  return nil
+end
+
+function Land:get_closest_favorite()
+  local x=self:pget("boundary_start")
+  if #self.favorites==0 then
+    do return end
+  end
+  if #self.favorites==1 then
+    do return 1 end
+  end
+  local closest={1,1000}
+  for i,v in ipairs(self.favorites) do
+    local u=math.abs(v[1]-x)
+    if u<closest[2] then
+      closest={i,u}
+    end
+  end
+  return closest[1]
+end
+
 function Land:enc(k,d)
-  if k==1 then
-    self:pdelta("bars",d)
-  elseif k==2 then
-    self:pdelta("boundary_start",d)
-  elseif k==3 then
-    self:pdelta("boundary_width",d)
+  if shift then
+    if k==1 then 
+      self:pdelta("timescalein",d)
+      self:pdelta("total_energy",d)
+    elseif k==2 and d~=0 then
+      local current=self:get_closest_favorite()
+      if current==nil then
+        do return end
+      end
+      local next=util.clamp(current+(d>0 and 1 or-1),1,#self.favorites)
+      self:pset("boundary_start",self.favorites[next][1])
+      self:pset("boundary_width",self.favorites[next][2])
+    elseif k==3 then
+      local is_favorite=self:is_favorite()
+      if d>0 then
+        if not is_favorite then
+          -- add favorite
+          self:add_favorite()
+        end
+      elseif d<0 then
+        if is_favorite then
+          -- remove favorite
+          print("removing favorite")
+          self:remove_favorite(is_favorite)
+        end
+      end
+    end
+  else
+    if k==1 then
+      self:pdelta("bars",d)
+    elseif k==2 then
+      self:pdelta("boundary_start",d)
+    elseif k==3 then
+      self:pdelta("boundary_width",d)
+    end
   end
 end
 
@@ -198,12 +299,15 @@ end
 function Land:show_help()
   screen.level(5)
   screen.move(64,22)
-  screen.text_center("k1+k2 to load sample")
+  screen.text_center("k1+k2 loads")
   screen.move(64,32)
-  screen.text_center("or")
+  screen.text_center("k1+k3 records")
   screen.move(64,42)
-  screen.text_center("k1+k3 to record sample")
+  screen.text_center("k1+e2 jumps to fav")
+  screen.move(64,52)
+  screen.text_center("k1+e3 makes fav")
 end
+
 function Land:redraw()
   if not self.loaded then
     self:show_help()
@@ -239,6 +343,11 @@ function Land:redraw()
   screen.fill()
   screen.rect(self:pget("boundary_start")+self:pget("boundary_width"),7,1,54)
   screen.fill()
+
+  for i,v in ipairs(self.favorites) do
+    screen.move(v[1],62)
+    screen.text_center("*")
+  end
   if shift then
     self:show_help()
   end
