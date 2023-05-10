@@ -14,6 +14,7 @@ function Land:init()
   -- setup waveformer
   self.waveform=waveform_:new{id=self.id}
   self.endpoints={}
+  self.favorites={current=0,list={}}
 
   local update_boundary=function()
     self:update_boundary()
@@ -28,6 +29,17 @@ function Land:init()
     {id="total_energy",name="energy",min=1,max=10000,exp=true,div=10,default=100,unit="K"},
   }
   -- params:add_group("LAND "..self.id,#params_menu+1)
+  params:add_text(self.id.."favorites","favorites","")
+  params:set_action(self.id.."favorites",function(x)
+    if x=="" then
+      self.favorites={current=0,list={}}
+      do return end
+    end
+    local data=json.decode(x)
+    if data~=nil and data.list~=nil then
+      self.favorites=data
+    end
+  end)
   params:add_file(self.id.."sample_file","file",_path.audio)
   params:set_action(self.id.."sample_file",function(x)
     local is_dir=function(path)
@@ -118,6 +130,7 @@ function Land:update_boundary()
 end
 
 
+
 function Land:update()
   local endpoints={0,0,0,0,0,0,0,0,0,0}
   local j=1
@@ -181,13 +194,91 @@ function Land:load(fname)
   self.loaded=true
 end
 
+function Land:update_favorites()
+  -- sort favorites
+  table.sort(self.favorites.list,function(a,b)
+    return a[1]<b[1]
+  end)
+end
+
+function Land:remove_favorite(j)
+  local list={}
+  for i,v in ipairs(self.favorites.list) do
+    if i==j then
+    else
+      table.insert(list,v)
+    end
+  end
+  self.favorites.list=list
+  self.favorites.current=0
+  self:update_favorites()
+end
+
+function Land:is_favorite()
+  local x=self:pget("boundary_start")
+  for i,v in ipairs(self.favorites.list) do
+    if v[1]==x then
+      do return i end
+    end
+  end
+  return nil
+end
+
+function Land:get_closest_favorite()
+  local x=self:pget("boundary_start")
+  if #self.favorites.list==0 then
+    do return end
+  end
+  if #self.favorites.list==1 then
+    do return 1 end
+  end
+  local closest={1,1000}
+  for i,v in ipairs(self.favorites.list) do
+    local u=math.abs(v[1]-x)
+    if u<closest[2] then
+      closest={i,u}
+    end
+  end
+  return closest[1]
+end
+
 function Land:enc(k,d)
-  if k==1 then
-    self:pdelta("bars",d)
-  elseif k==2 then
-    self:pdelta("boundary_start",d)
-  elseif k==3 then
-    self:pdelta("boundary_width",d)
+  if shift then
+    if k==2 and d~=0 then
+      local current=self:get_closest_favorite()
+      if current==nil then
+        do return end
+      end
+      local next=util.clamp(current+(d>0 and 1 or-1),1,#self.favorites.list)
+      print(next)
+      self:pset("boundary_start",self.favorites.list[next][1])
+      self:pset("boundary_width",self.favorites.list[next][2])
+    elseif k==3 then
+      local is_favorite=self:is_favorite()
+      if d>0 then
+        if not is_favorite then
+          -- do favorite position
+          table.insert(self.favorites.list,{self:pget("boundary_start"),self:pget("boundary_width")})
+          self.favorites.current=#self.favorites.list
+          self:update_favorites()
+        end
+      elseif d<0 then
+        if is_favorite then
+          -- remove favorite
+          print("removing favorite")
+          self:remove_favorite(is_favorite)
+        end
+      end
+    end
+  else
+    if k==1 then
+      self:pdelta("bars",d)
+    elseif k==2 then
+      self:pdelta("boundary_start",d)
+      self.favorites.current=0
+    elseif k==3 then
+      self:pdelta("boundary_width",d)
+    end
   end
 end
 
@@ -198,12 +289,15 @@ end
 function Land:show_help()
   screen.level(5)
   screen.move(64,22)
-  screen.text_center("k1+k2 to load sample")
+  screen.text_center("k1+k2 loads")
   screen.move(64,32)
-  screen.text_center("or")
+  screen.text_center("k1+k3 records")
   screen.move(64,42)
-  screen.text_center("k1+k3 to record sample")
+  screen.text_center("k1+e2 jumps to fav")
+  screen.move(64,52)
+  screen.text_center("k1+e3 makes fav")
 end
+
 function Land:redraw()
   if not self.loaded then
     self:show_help()
@@ -239,6 +333,11 @@ function Land:redraw()
   screen.fill()
   screen.rect(self:pget("boundary_start")+self:pget("boundary_width"),7,1,54)
   screen.fill()
+
+  for i,v in ipairs(self.favorites.list) do
+    screen.move(v[1],62)
+    screen.text_center("*")
+  end
   if shift then
     self:show_help()
   end
