@@ -39,7 +39,7 @@ function Land:init()
       do return end
     end
     local data=json.decode(x)
-    if data~=nil and data.list~=nil then
+    if data~=nil then
       self.favorites=data
     end
   end)
