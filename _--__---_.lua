@@ -22,8 +22,8 @@ installer_=include("scinstaller/scinstaller")
 installer=installer_:new{requirements={"Fverb","Analog","Chew","Loss","Degrade"},zip="https://github.com/schollz/portedplugins/releases/download/v0.4.5/PortedPlugins-RaspberryPi.zip"}
 engine.name=installer:ready() and 'Sonicules' or nil
 
-if not string.find(package.cpath,"/home/we/dust/code/amenbreak/lib/") then
-  package.cpath=package.cpath..";/home/we/dust/code/amenbreak/lib/?.so"
+if not string.find(package.cpath,"/home/we/dust/code/_--__---_/lib/") then
+  package.cpath=package.cpath..";/home/we/dust/code/_--__---_/lib/?.so"
 end
 json=require("cjson")
 ball=include("lib/ball")
