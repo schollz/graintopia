@@ -13,11 +13,14 @@
 -- k1 shifts
 -- k1+k2 loads
 -- k1+k3 records
--- k1+e1 timescale 
+-- k1+e1 timescale
 -- k1+e2 scrubs favs
 -- k2+e3 creates favs
 
-engine.name="Sonicules"
+-- check for requirements
+installer_=include("scinstaller/scinstaller")
+installer=installer_:new{requirements={"Fverb","Analog","Chew","Loss","Degrade"},zip="https://github.com/schollz/portedplugins/releases/download/v0.4.5/PortedPlugins-RaspberryPi.zip"}
+engine.name=installer:ready() and 'Sonicules' or nil
 
 if not string.find(package.cpath,"/home/we/dust/code/amenbreak/lib/") then
   package.cpath=package.cpath..";/home/we/dust/code/amenbreak/lib/?.so"
@@ -41,7 +44,17 @@ rendering_land=0
 recording=false
 shift=false
 
+
 function init()
+  if not installer:ready() then
+    clock.run(function()
+      while true do
+        redraw()
+        clock.sleep(1/5)
+      end
+    end)
+    do return end
+  end
   norns.enc.sens(1,16)
   os.execute("mkdir -p ".._path.audio.."_--__---_/recordings")
   os.execute(_path.code.."_--__---_/lib/oscnotify/run.sh &")
@@ -148,17 +161,17 @@ function init()
   end)
 
   --debug
-  if true or not util.file_exists(_path.data.."_--__---_/first") then
-    params:set("1sample_file","/home/we/dust/code/_--__---_/lib/piano_cm.flac")
-    params:set("1boundary_start",15)
-    params:set("1boundary_width",15)
-    -- params:set("2sample_file","/home/we/dust/code/_--__---_/lib/choir_cm.flac")
-    -- params:set("2boundary_start",27.6)
-    -- params:set("2boundary_width",13.2)
-    -- os.execute("touch ".._path.data.."_--__---_/first")
-    -- show_message("_--__---_ demo",5)
-  end
-  params:set("1favorites",json.encode({{12,23},{34,10}})
+  -- if true or not util.file_exists(_path.data.."_--__---_/first") then
+  --   params:set("1sample_file","/home/we/dust/code/_--__---_/lib/piano_cm.flac")
+  --   params:set("1boundary_start",15)
+  --   params:set("1boundary_width",15)
+  --   -- params:set("2sample_file","/home/we/dust/code/_--__---_/lib/choir_cm.flac")
+  --   -- params:set("2boundary_start",27.6)
+  --   -- params:set("2boundary_width",13.2)
+  --   -- os.execute("touch ".._path.data.."_--__---_/first")
+  --   -- show_message("_--__---_ demo",5)
+  -- end
+  -- params:set("1favorites",json.encode({{12,23},{34,10}})
 end
 
 function recording_start()
@@ -180,6 +193,10 @@ function recording_stop()
 end
 
 function key(k,z)
+  if not installer:ready() then
+    installer:key(k,z)
+    do return end
+  end
 
   if k==1 then
     shift=z==1
@@ -206,6 +223,9 @@ function key(k,z)
 end
 
 function enc(k,d)
+  if not installer:ready() then
+    do return end
+  end
   lands[params:get("land")]:enc(k,d)
 end
 
@@ -274,6 +294,10 @@ end
 
 
 function redraw()
+  if not installer:ready() then
+    installer:redraw()
+    do return end
+  end
   if selecting==true then
     do return end
   end
@@ -291,6 +315,8 @@ function redraw()
   end
   screen.update()
 end
+
+
 
 
 

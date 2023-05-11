@@ -31,8 +31,8 @@ function Land:init()
   -- params:add_group("LAND "..self.id,#params_menu+1)
   params:add_text(self.id.."favorites","favorites","")
   params:set_action(self.id.."favorites",function(x)
-    if self.noupdate then 
-      do return end 
+    if self.noupdate then
+      do return end
     end
     if x=="" then
       self.favorites={}
@@ -202,7 +202,7 @@ function Land:update_favorites()
   table.sort(self.favorites,function(a,b)
     return a[1]<b[1]
   end)
-  self.noupdate=true 
+  self.noupdate=true
   params:set(self.id.."favorites",json.encode(self.favorites))
   self.noupdate=nil
 end
@@ -255,7 +255,7 @@ end
 
 function Land:enc(k,d)
   if shift then
-    if k==1 then 
+    if k==1 then
       self:pdelta("timescalein",d)
       self:pdelta("total_energy",d)
     elseif k==2 and d~=0 then
@@ -299,18 +299,21 @@ end
 function Land:show_help()
   screen.level(5)
   screen.move(64,22)
-  screen.text_center("k1+k2 loads")
-  screen.move(64,32)
-  screen.text_center("k1+k3 records")
-  screen.move(64,42)
   screen.text_center("k1+e2 jumps to fav")
-  screen.move(64,52)
+  screen.move(64,42)
   screen.text_center("k1+e3 makes fav")
+end
+function Land:show_help2()
+  screen.level(5)
+  screen.move(64,22)
+  screen.text_center("k1+k2 loads")
+  screen.move(64,42)
+  screen.text_center("k1+k3 records")
 end
 
 function Land:redraw()
   if not self.loaded then
-    self:show_help()
+    self:show_help2()
     do return end
   end
   screen.blend_mode(0)
