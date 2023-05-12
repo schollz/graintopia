@@ -2,7 +2,7 @@
 --
 -- llllllll.co/t/_--__---_
 --
--- underdash
+-- underoverunderoverunder
 -- @infinitedigits
 --
 --    ▼ instructions below ▼
@@ -10,7 +10,7 @@
 -- k2/k3 navigates
 -- e1 lifts
 -- e2/e3 boundaries
--- k1 shifts
+-- k1 shifts / toggles favs
 -- k1+k2 loads
 -- k1+k3 records
 -- k1+e1 timescale
