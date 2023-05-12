@@ -161,17 +161,17 @@ function init()
   end)
 
   --debug
-  if not util.file_exists(_path.data.."_--__---_/first") then
+  if true or not util.file_exists(_path.data.."_--__---_/first") then
     params:set("1sample_file","/home/we/dust/code/_--__---_/lib/piano_cm.flac")
     params:set("1boundary_start",15)
     params:set("1boundary_width",15)
-    params:set("2sample_file","/home/we/dust/code/_--__---_/lib/choir_cm.flac")
-    params:set("2boundary_start",27.6)
-    params:set("2boundary_width",13.2)
-    os.execute("touch ".._path.data.."_--__---_/first")
-    show_message("_--__---_ demo",5)
+    -- show_message("_--__---_ demo",5)
+    -- params:set("2sample_file","/home/we/dust/code/_--__---_/lib/choir_cm.flac")
+    -- params:set("2boundary_start",27.6)
+    -- params:set("2boundary_width",13.2)
+    -- os.execute("touch ".._path.data.."_--__---_/first")
   end
-  -- params:set("1favorites",json.encode({{12,23},{34,10}})
+  params:set("1favorites",json.encode({{12,23},{34,10}}))
 end
 
 function recording_start()

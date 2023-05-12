@@ -12,6 +12,8 @@ end
 
 function Land:init()
   -- setup waveformer
+  self.move_time=20
+  self.moving={false,false}
   self.waveform=waveform_:new{id=self.id}
   self.endpoints={}
   self.favorites={}
@@ -133,8 +135,28 @@ function Land:update_boundary()
 end
 
 
+function Land:do_move(k,v,x)
+  self:pdelta(k,v)
+  if (v>0 and self:pget(k)>x) or (v<0 and self.pget(k)<x) then
+    self:pset(k,x)
+    -- done moving
+    do return false end
+  end
+  -- keep moving
+  do return true end
+end
 
 function Land:update()
+  -- update favorite moving
+  if self.moving[1] or self.moving[2] then
+    for i,k in ipairs({"boundary_start","boundary_width"}) do
+      if self.moving[i] then
+        self.moving[i]=self:do_move(k,self.move_velocity[i],self.move_to[i])
+      end
+    end
+  end
+
+  -- update endpoint
   local endpoints={0,0,0,0,0,0,0,0,0,0}
   local j=1
   for _,bp in ipairs(self.ballpits) do
@@ -253,19 +275,26 @@ function Land:get_closest_favorite()
   return closest[1]
 end
 
+function Land:move_to_closest_favorite()
+  local current=self:get_closest_favorite()
+  if current==nil then
+    do return end
+  end
+  local next=util.clamp(current+(d>0 and 1 or-1),1,#self.favorites)
+  self.move_to={self.favorites[next][1],self.favorites[next][2]}
+  self.move_velocity={(self.favorites[next][1]-self:pget("boundary_start"))/self.move_time,(self.favorites[next][2]-self:pget("boundary_width"))/self.move_time}
+  self.moving={true,true}
+  -- self:pset("boundary_start",self.favorites[next][1])
+  -- self:pset("boundary_width",self.favorites[next][2])
+end
+
 function Land:enc(k,d)
   if shift then
     if k==1 then
       self:pdelta("timescalein",d)
       self:pdelta("total_energy",d)
     elseif k==2 and d~=0 then
-      local current=self:get_closest_favorite()
-      if current==nil then
-        do return end
-      end
-      local next=util.clamp(current+(d>0 and 1 or-1),1,#self.favorites)
-      self:pset("boundary_start",self.favorites[next][1])
-      self:pset("boundary_width",self.favorites[next][2])
+      self:move_to_closest_favorite()
     elseif k==3 then
       local is_favorite=self:is_favorite()
       if d>0 then
