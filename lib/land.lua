@@ -295,7 +295,7 @@ function Land:move_to_closest_favorite(d)
 end
 
 function Land:enc(k,d)
-  if shift then
+  if shift_toggle then
     if k==1 then
       self:pdelta("timescalein",d)
       self:pdelta("total_energy",d)
@@ -341,7 +341,7 @@ function Land:show_help()
   end
   for i,v in ipairs(self.show_help_text) do
     if (self.show_help_text_i==0) then
-      if not shift then
+      if not shift_toggle then
         if v>0 then
           self.show_help_text[i]=v-1
         end
@@ -392,16 +392,19 @@ function Land:redraw()
   self.waveform:redraw(32,32)
   if next(self.endpoints)~=nil then
     screen.blend_mode(5)
-    local y=8
+    local y=9
     local l=1
     for i=1,#self.endpoints,2 do
+      if i==#self.endpoints then
+        y=y-1
+      end
       screen.level(self.players[l].volume)
-      screen.rect(self.endpoints[i],y,self.endpoints[i+1]-self.endpoints[i],6)
+      screen.rect(self.endpoints[i],y,self.endpoints[i+1]-self.endpoints[i],5)
       screen.fill()
       if self.players[l].position>0 then
         -- plot position
         screen.level(6)
-        screen.rect(self.players[l].position,y,1,6)
+        screen.rect(self.players[l].position,y,1,5)
         screen.fill()
         -- -- plot pan
         -- screen.level(2)
@@ -413,15 +416,23 @@ function Land:redraw()
     end
   end
   screen.update()
-  screen.level(10)
-  screen.rect(self:pget("boundary_start"),7,1,54)
+  screen.level(shift_toggle and 10 or 5)
+  screen.rect(self:pget("boundary_start"),9,1,50)
   screen.fill()
-  screen.rect(self:pget("boundary_start")+self:pget("boundary_width"),7,1,54)
+  screen.rect(self:pget("boundary_start")+self:pget("boundary_width"),9,1,50)
   screen.fill()
+  if shift_toggle then
+    -- screen.move(self:pget("boundary_start"),7+4)
+    -- screen.text_center("*")
+    -- screen.move(self:pget("boundary_start")+self:pget("boundary_width"),7)
+    -- screen.text_center("*")
+  end
 
   for i,v in ipairs(self.favorites) do
-    screen.move(v[1],62)
-    screen.text_center("*")
+    screen.rect(v[1],60,1,2)
+    screen.fill()
+    screen.rect(v[1],6,1,2)
+    screen.fill()
   end
   self:show_help()
 end

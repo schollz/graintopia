@@ -44,6 +44,7 @@ NUM_LANDS=3
 rendering_land=0
 recording=false
 shift=false
+shift_toggle=false
 
 
 function init()
@@ -172,7 +173,7 @@ function init()
     -- params:set("2boundary_width",13.2)
     -- os.execute("touch ".._path.data.."_--__---_/first")
   end
-  params:set("1favorites",json.encode({{12,23},{34,10},{90,7}}))
+  -- params:set("1favorites",json.encode({{12,23},{34,10},{90,7}}))
 end
 
 function recording_start()
@@ -201,6 +202,9 @@ function key(k,z)
 
   if k==1 then
     shift=z==1
+    if shift then
+      shift_toggle=not shift_toggle
+    end
   else
     if recording and z==1 then
       recording_stop()
