@@ -19,9 +19,10 @@
 
 -- check for requirements
 installer_=include("scinstaller/scinstaller")
-installer=installer_:new{requirements={"Fverb","AnalogTape","AnalogChew","AnalogLoss","AnalogDegrade"},zip="https://github.com/schollz/portedplugins/releases/download/v0.4.5/PortedPlugins-RaspberryPi.zip"}
+installer=installer_:new{requirements={"Fverb"},zip="https://github.com/schollz/portedplugins/releases/download/v0.4.5/PortedPlugins-RaspberryPi.zip"}
 engine.name=installer:ready() and 'Sonicules' or nil
 
+CLOCK_RATE=15
 if not string.find(package.cpath,"/home/we/dust/code/_--__---_/lib/") then
   package.cpath=package.cpath..";/home/we/dust/code/_--__---_/lib/?.so"
 end
@@ -154,7 +155,7 @@ function init()
   -- redraw
   clock.run(function()
     while true do
-      clock.sleep(1/15)
+      clock.sleep(1/CLOCK_RATE)
       lands[params:get("land")]:update()
       redraw()
     end

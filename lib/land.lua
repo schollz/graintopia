@@ -12,7 +12,6 @@ end
 
 function Land:init()
   -- setup waveformer
-  self.move_time=20
   self.moving={false,false}
   self.waveform=waveform_:new{id=self.id}
   self.endpoints={}
@@ -27,6 +26,7 @@ function Land:init()
     {id="wet",name="reverb",engine=true,min=0,max=1,exp=false,div=0.05,default=0.2,unit=""},
     {id="boundary_start",name="boundary start",min=0,max=127,exp=false,div=0.2,default=0,unit="%",action=update_boundary},
     {id="boundary_width",name="boundary width",min=0,max=127,exp=false,div=0.2,default=127,unit="%",action=update_boundary},
+    {id="move_duration",name="move duration",engine=true,min=0,max=10,exp=false,div=0.1,default=0.1,unit="s"},
     {id="timescalein",name="timescale",engine=true,min=0,max=10,exp=false,div=0.1,default=1,unit="x"},
     {id="total_energy",name="temperature",min=1,max=10000,exp=true,div=10,default=100,unit="K"},
   }
@@ -137,7 +137,7 @@ end
 
 function Land:do_move(k,v,x)
   self:pdelta(k,v)
-  if (v>0 and self:pget(k)>x) or (v<0 and self.pget(k)<x) then
+  if (v>0 and self:pget(k)>x) or (v<0 and self:pget(k)<x) then
     self:pset(k,x)
     -- done moving
     do return false end
@@ -151,7 +151,7 @@ function Land:update()
   if self.moving[1] or self.moving[2] then
     for i,k in ipairs({"boundary_start","boundary_width"}) do
       if self.moving[i] then
-        self.moving[i]=self:do_move(k,self.move_velocity[i],self.move_to[i])
+        self.moving[i]=self:do_move(k,self.move_velocity[i]*5,self.move_to[i])
       end
     end
   end
@@ -275,17 +275,20 @@ function Land:get_closest_favorite()
   return closest[1]
 end
 
-function Land:move_to_closest_favorite()
+function Land:move_to_closest_favorite(d)
   local current=self:get_closest_favorite()
   if current==nil then
     do return end
   end
   local next=util.clamp(current+(d>0 and 1 or-1),1,#self.favorites)
-  self.move_to={self.favorites[next][1],self.favorites[next][2]}
-  self.move_velocity={(self.favorites[next][1]-self:pget("boundary_start"))/self.move_time,(self.favorites[next][2]-self:pget("boundary_width"))/self.move_time}
-  self.moving={true,true}
-  -- self:pset("boundary_start",self.favorites[next][1])
-  -- self:pset("boundary_width",self.favorites[next][2])
+  if self:pget("move_duration")==0 then
+    self:pset("boundary_start",self.favorites[next][1])
+    self:pset("boundary_width",self.favorites[next][2])
+  else
+    self.move_to={self.favorites[next][1],self.favorites[next][2]}
+    self.move_velocity={(self.favorites[next][1]-self:pget("boundary_start"))/(self:pget("move_duration")*CLOCK_RATE),(self.favorites[next][2]-self:pget("boundary_width"))/(self:pget("move_duration")*CLOCK_RATE)}
+    self.moving={true,true}
+  end
 end
 
 function Land:enc(k,d)
@@ -294,7 +297,7 @@ function Land:enc(k,d)
       self:pdelta("timescalein",d)
       self:pdelta("total_energy",d)
     elseif k==2 and d~=0 then
-      self:move_to_closest_favorite()
+      self:move_to_closest_favorite(d)
     elseif k==3 then
       local is_favorite=self:is_favorite()
       if d>0 then
