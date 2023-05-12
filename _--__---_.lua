@@ -172,7 +172,7 @@ function init()
     -- params:set("2boundary_width",13.2)
     -- os.execute("touch ".._path.data.."_--__---_/first")
   end
-  params:set("1favorites",json.encode({{12,23},{34,10}}))
+  params:set("1favorites",json.encode({{12,23},{34,10},{90,7}}))
 end
 
 function recording_start()

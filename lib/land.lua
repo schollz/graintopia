@@ -12,6 +12,9 @@ end
 
 function Land:init()
   -- setup waveformer
+  self.show_help_text_i=0
+  self.show_help_text_x=0
+  self.show_help_text={0,0}
   self.moving={false,false}
   self.waveform=waveform_:new{id=self.id}
   self.endpoints={}
@@ -329,12 +332,49 @@ function Land:key(k,z)
 end
 
 function Land:show_help()
-  screen.level(5)
-  screen.move(64,22)
-  screen.text_center("k1+e2 jumps to fav")
-  screen.move(64,42)
-  screen.text_center("k1+e3 makes fav")
+  if (self.show_help_text_x>200) then
+    do return end
+  end
+  self.show_help_text_i=self.show_help_text_i+1
+  if self.show_help_text_i>1 then
+    self.show_help_text_i=0
+  end
+  for i,v in ipairs(self.show_help_text) do
+    if (self.show_help_text_i==0) then
+      if not shift then
+        if v>0 then
+          self.show_help_text[i]=v-1
+        end
+      else
+        self.show_help_text_x=self.show_help_text_x+1
+        if (self:pget("boundary_start")+self:pget("boundary_width")>64) then
+          self.show_help_text[i]=self.show_help_text[i]+(i==1 and-1 or 1)
+        else
+          self.show_help_text[i]=self.show_help_text[i]+(i==1 and 1 or-1)
+        end
+      end
+    end
+    self.show_help_text[i]=util.clamp(self.show_help_text[i],0,5)
+    if self.show_help_text[i]>0 then
+      screen.level(self.show_help_text[i])
+      local fn=screen.text
+      local xpos=2
+      if i==1 then
+        fn=screen.text_right
+        xpos=126
+      end
+      screen.move(xpos,22)
+      fn("k1+e2")
+      screen.move(xpos,30)
+      fn("jumps fav")
+      screen.move(xpos,42)
+      fn("k1+e3")
+      screen.move(xpos,50)
+      fn("changes fav")
+    end
+  end
 end
+
 function Land:show_help2()
   screen.level(5)
   screen.move(64,22)
@@ -383,9 +423,7 @@ function Land:redraw()
     screen.move(v[1],62)
     screen.text_center("*")
   end
-  if shift then
-    self:show_help()
-  end
+  self:show_help()
 end
 
 return Land
