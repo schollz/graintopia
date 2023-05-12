@@ -134,8 +134,8 @@ Engine_Sonicules : CroneEngine {
 			var in = SoundIn.ar([0,1])*(\db_in.kr(0).dbamp);
 			var sndDry = In.ar(busDry,2);
 			var sndWet = In.ar(busWet,2);
-			sndWet = (sndWet+(in*0.2));
-			sndWet=Fverb.ar(sndWet[0],sndWet[1]);
+			// sndWet = (sndWet+(in*0.2));
+			sndWet=Fverb.ar(sndWet[0],sndWet[1],50,decay:LFNoise2.kr(1/4).range(70,90));
 
 			snd = in + sndDry + sndWet;
 			Out.ar(0,snd*Line.ar(0,1,3));
