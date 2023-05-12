@@ -1,7 +1,6 @@
 # `_--__---_`
 
-a wip.
-
+![six grains](https://repository-images.githubusercontent.com/638070059/b32be6c4-aa7e-43ad-aeed-ed96aa0daa22)
 
 ## todo 
 
