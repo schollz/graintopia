@@ -2,25 +2,25 @@
 --
 -- llllllll.co/t/graintopia
 --
--- underoverunderoverunder
+-- land of grains.
 -- @infinitedigits
 --
 --    ▼ instructions below ▼
 --
 -- k2/k3 navigates
--- e1 lifts
+-- e1 changes timescale
 -- e2/e3 boundaries
 -- k1 shifts / toggles favs
 -- k1+k2 loads
 -- k1+k3 records
--- k1+e1 timescale
+-- k1+e1 changes grains
 -- k1+e2 scrubs favs
 -- k2+e3 creates favs
 
 -- check for requirements
-installer_=include("scinstaller/scinstaller")
+installer_=include("lib/scinstaller/scinstaller")
 installer=installer_:new{requirements={"Fverb"},zip="https://github.com/schollz/portedplugins/releases/download/v0.4.5/PortedPlugins-RaspberryPi.zip"}
-engine.name=installer:ready() and 'Sonicules' or nil
+engine.name=installer:ready() and 'Graintopia' or nil
 
 CLOCK_RATE=15
 if not string.find(package.cpath,"/home/we/dust/code/graintopia/lib/") then

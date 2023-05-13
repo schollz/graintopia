@@ -13,13 +13,14 @@ this script was born out of creating [a sampling demo for the ceti workshop seri
 ## Documentation
 
 - k2/k3 navigates lands
-- e1 changes number of grains (1-6)
+- e1 changes timescale
 - e2/e3 changes boundaries
 - hold k1+k2 to load audio
 - hold k1+k3 to record audio
 - hold k1+e1 to change timescale
 - press k1 to toggle "favorites"
 - when in favorite mode: 
+-   e1 changes number of grains
 -   e2 scrubs favorite
 -   e3 creates favorites
 

@@ -29,7 +29,7 @@ function Land:init()
     {id="wet",name="reverb",engine=true,min=0,max=1,exp=false,div=0.05,default=0.2,unit=""},
     {id="boundary_start",name="boundary start",min=0,max=127,exp=false,div=0.2,default=0,unit="%",action=update_boundary},
     {id="boundary_width",name="boundary width",min=0,max=127,exp=false,div=0.2,default=127,unit="%",action=update_boundary},
-    {id="move_duration",name="move duration",engine=true,min=0,max=10,exp=false,div=0.1,default=0.1,unit="s"},
+    {id="move_duration",name="move duration",engine=true,min=0,max=10,exp=false,div=0.1,default=2,unit="s"},
     {id="timescalein",name="timescale",engine=true,min=0,max=10,exp=false,div=0.1,default=1,unit="x"},
     {id="total_energy",name="temperature",min=1,max=10000,exp=true,div=10,default=100,unit="K"},
   }
@@ -297,8 +297,7 @@ end
 function Land:enc(k,d)
   if shift_toggle then
     if k==1 then
-      self:pdelta("timescalein",d)
-      self:pdelta("total_energy",d)
+      self:pdelta("bars",d)
     elseif k==2 and d~=0 then
       self:move_to_closest_favorite(d)
     elseif k==3 then
@@ -318,7 +317,8 @@ function Land:enc(k,d)
     end
   else
     if k==1 then
-      self:pdelta("bars",d)
+      self:pdelta("timescalein",d)
+      self:pdelta("total_energy",d)
     elseif k==2 then
       self:pdelta("boundary_start",d)
     elseif k==3 then
@@ -416,7 +416,7 @@ function Land:redraw()
     end
   end
   screen.update()
-  screen.level(shift_toggle and 10 or 5)
+  screen.level(shift_toggle and 15 or 4)
   screen.rect(self:pget("boundary_start"),9,1,50)
   screen.fill()
   screen.rect(self:pget("boundary_start")+self:pget("boundary_width"),9,1,50)
