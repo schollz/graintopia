@@ -12,6 +12,10 @@ end
 
 function Land:init()
   -- setup waveformer
+  self.show_help_text_i=0
+  self.show_help_text_x=0
+  self.show_help_text={0,0}
+  self.moving={false,false}
   self.waveform=waveform_:new{id=self.id}
   self.endpoints={}
   self.favorites={}
@@ -25,6 +29,7 @@ function Land:init()
     {id="wet",name="reverb",engine=true,min=0,max=1,exp=false,div=0.05,default=0.2,unit=""},
     {id="boundary_start",name="boundary start",min=0,max=127,exp=false,div=0.2,default=0,unit="%",action=update_boundary},
     {id="boundary_width",name="boundary width",min=0,max=127,exp=false,div=0.2,default=127,unit="%",action=update_boundary},
+    {id="move_duration",name="move duration",engine=true,min=0,max=10,exp=false,div=0.1,default=0.1,unit="s"},
     {id="timescalein",name="timescale",engine=true,min=0,max=10,exp=false,div=0.1,default=1,unit="x"},
     {id="total_energy",name="temperature",min=1,max=10000,exp=true,div=10,default=100,unit="K"},
   }
@@ -133,8 +138,28 @@ function Land:update_boundary()
 end
 
 
+function Land:do_move(k,v,x)
+  self:pdelta(k,v)
+  if (v>0 and self:pget(k)>x) or (v<0 and self:pget(k)<x) then
+    self:pset(k,x)
+    -- done moving
+    do return false end
+  end
+  -- keep moving
+  do return true end
+end
 
 function Land:update()
+  -- update favorite moving
+  if self.moving[1] or self.moving[2] then
+    for i,k in ipairs({"boundary_start","boundary_width"}) do
+      if self.moving[i] then
+        self.moving[i]=self:do_move(k,self.move_velocity[i]*5,self.move_to[i])
+      end
+    end
+  end
+
+  -- update endpoint
   local endpoints={0,0,0,0,0,0,0,0,0,0}
   local j=1
   for _,bp in ipairs(self.ballpits) do
@@ -253,19 +278,29 @@ function Land:get_closest_favorite()
   return closest[1]
 end
 
+function Land:move_to_closest_favorite(d)
+  local current=self:get_closest_favorite()
+  if current==nil then
+    do return end
+  end
+  local next=util.clamp(current+(d>0 and 1 or-1),1,#self.favorites)
+  if self:pget("move_duration")==0 then
+    self:pset("boundary_start",self.favorites[next][1])
+    self:pset("boundary_width",self.favorites[next][2])
+  else
+    self.move_to={self.favorites[next][1],self.favorites[next][2]}
+    self.move_velocity={(self.favorites[next][1]-self:pget("boundary_start"))/(self:pget("move_duration")*CLOCK_RATE),(self.favorites[next][2]-self:pget("boundary_width"))/(self:pget("move_duration")*CLOCK_RATE)}
+    self.moving={true,true}
+  end
+end
+
 function Land:enc(k,d)
-  if shift then
+  if shift_toggle then
     if k==1 then
       self:pdelta("timescalein",d)
       self:pdelta("total_energy",d)
     elseif k==2 and d~=0 then
-      local current=self:get_closest_favorite()
-      if current==nil then
-        do return end
-      end
-      local next=util.clamp(current+(d>0 and 1 or-1),1,#self.favorites)
-      self:pset("boundary_start",self.favorites[next][1])
-      self:pset("boundary_width",self.favorites[next][2])
+      self:move_to_closest_favorite(d)
     elseif k==3 then
       local is_favorite=self:is_favorite()
       if d>0 then
@@ -297,12 +332,49 @@ function Land:key(k,z)
 end
 
 function Land:show_help()
-  screen.level(5)
-  screen.move(64,22)
-  screen.text_center("k1+e2 jumps to fav")
-  screen.move(64,42)
-  screen.text_center("k1+e3 makes fav")
+  if (self.show_help_text_x>200) then
+    do return end
+  end
+  self.show_help_text_i=self.show_help_text_i+1
+  if self.show_help_text_i>1 then
+    self.show_help_text_i=0
+  end
+  for i,v in ipairs(self.show_help_text) do
+    if (self.show_help_text_i==0) then
+      if not shift_toggle then
+        if v>0 then
+          self.show_help_text[i]=v-1
+        end
+      else
+        self.show_help_text_x=self.show_help_text_x+1
+        if (self:pget("boundary_start")+self:pget("boundary_width")>64) then
+          self.show_help_text[i]=self.show_help_text[i]+(i==1 and-1 or 1)
+        else
+          self.show_help_text[i]=self.show_help_text[i]+(i==1 and 1 or-1)
+        end
+      end
+    end
+    self.show_help_text[i]=util.clamp(self.show_help_text[i],0,5)
+    if self.show_help_text[i]>0 then
+      screen.level(self.show_help_text[i])
+      local fn=screen.text
+      local xpos=2
+      if i==1 then
+        fn=screen.text_right
+        xpos=126
+      end
+      screen.move(xpos,22)
+      fn("k1+e2")
+      screen.move(xpos,30)
+      fn("jumps fav")
+      screen.move(xpos,42)
+      fn("k1+e3")
+      screen.move(xpos,50)
+      fn("changes fav")
+    end
+  end
 end
+
 function Land:show_help2()
   screen.level(5)
   screen.move(64,22)
@@ -320,16 +392,19 @@ function Land:redraw()
   self.waveform:redraw(32,32)
   if next(self.endpoints)~=nil then
     screen.blend_mode(5)
-    local y=8
+    local y=9
     local l=1
     for i=1,#self.endpoints,2 do
+      if i==#self.endpoints then
+        y=y-1
+      end
       screen.level(self.players[l].volume)
-      screen.rect(self.endpoints[i],y,self.endpoints[i+1]-self.endpoints[i],6)
+      screen.rect(self.endpoints[i],y,self.endpoints[i+1]-self.endpoints[i],5)
       screen.fill()
       if self.players[l].position>0 then
         -- plot position
         screen.level(6)
-        screen.rect(self.players[l].position,y,1,6)
+        screen.rect(self.players[l].position,y,1,5)
         screen.fill()
         -- -- plot pan
         -- screen.level(2)
@@ -341,19 +416,25 @@ function Land:redraw()
     end
   end
   screen.update()
-  screen.level(10)
-  screen.rect(self:pget("boundary_start"),7,1,54)
+  screen.level(shift_toggle and 10 or 5)
+  screen.rect(self:pget("boundary_start"),9,1,50)
   screen.fill()
-  screen.rect(self:pget("boundary_start")+self:pget("boundary_width"),7,1,54)
+  screen.rect(self:pget("boundary_start")+self:pget("boundary_width"),9,1,50)
   screen.fill()
+  if shift_toggle then
+    -- screen.move(self:pget("boundary_start"),7+4)
+    -- screen.text_center("*")
+    -- screen.move(self:pget("boundary_start")+self:pget("boundary_width"),7)
+    -- screen.text_center("*")
+  end
 
   for i,v in ipairs(self.favorites) do
-    screen.move(v[1],62)
-    screen.text_center("*")
+    screen.rect(v[1],60,1,2)
+    screen.fill()
+    screen.rect(v[1],6,1,2)
+    screen.fill()
   end
-  if shift then
-    self:show_help()
-  end
+  self:show_help()
 end
 
 return Land
