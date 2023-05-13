@@ -47,7 +47,10 @@ shift=false
 shift_toggle=false
 
 
+levels={}
+
 function init()
+
   if not installer:ready() then
     clock.run(function()
       while true do
@@ -163,17 +166,25 @@ function init()
   end)
 
   --debug
-  if true or not util.file_exists(_path.data.."graintopia/first") then
+  if not util.file_exists(_path.data.."graintopia/first") then
     params:set("1sample_file","/home/we/dust/code/graintopia/lib/piano_cm.flac")
     params:set("1boundary_start",15)
     params:set("1boundary_width",15)
-    -- show_message("graintopia demo",5)
-    -- params:set("2sample_file","/home/we/dust/code/graintopia/lib/choir_cm.flac")
-    -- params:set("2boundary_start",27.6)
-    -- params:set("2boundary_width",13.2)
-    -- os.execute("touch ".._path.data.."graintopia/first")
+    show_message("welcome to graintopia",10)
+    params:set("2sample_file","/home/we/dust/code/graintopia/lib/choir_cm.flac")
+    params:set("2boundary_start",27.6)
+    params:set("2boundary_width",13.2)
+    params:set("1favorites",json.encode({{12,23},{34,10},{90,7}}))
+    os.execute("touch ".._path.data.."graintopia/first")
   end
-  -- params:set("1favorites",json.encode({{12,23},{34,10},{90,7}}))
+
+  -- setup levels
+  print("setting monitor level")
+  levels["monitor_level"]=params:get("monitor_level")
+  params:set("monitor_level",-inf)
+  levels["engine_level"]=params:get("engine_level")
+  params:set("engine_level",0)
+
 end
 
 function recording_start()
@@ -239,6 +250,9 @@ function rerun()
 end
 
 function cleanup()
+  for k,v in pairs(levels) do
+    params:set(k,v)
+  end
   os.execute("pkill -f oscnotify")
 end
 

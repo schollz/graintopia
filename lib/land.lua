@@ -63,9 +63,9 @@ function Land:init()
       local f=io.open(name,"r")
       if f~=nil then io.close(f) return true else return false end
     end
-    print(string.format("[sample_file%d] loading '%s'",self.id,x))
-    print("file exists?",file_exists(x))
-    print("is_dir?",is_dir(x))
+    -- print(string.format("[sample_file%d] loading '%s'",self.id,x))
+    -- print("file exists?",file_exists(x))
+    -- print("is_dir?",is_dir(x))
     if x~="cancel" and file_exists(x) and (not is_dir(x)) then
       self:load(x)
     end

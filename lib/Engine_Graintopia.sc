@@ -144,8 +144,8 @@ Engine_Graintopia : CroneEngine {
 		SynthDef("recorder",{
 			arg buf,gate=1;
 			var snd = SoundIn.ar([0,1]);
-			snd = snd * EnvGen.ar(Env.adsr(0.05,1,1,0.05),gate:gate,doneAction:2);
-			RecordBuf.ar(snd,buf,loop:0,doneAction:2);
+			snd = snd * 10 * EnvGen.ar(Env.adsr(0.05,1,1,0.05),gate:gate,doneAction:2);
+			RecordBuf.ar(snd.tanh,buf,loop:0,doneAction:2);
 			Out.ar(0,Silent.ar(2));
 		}).add;
 
