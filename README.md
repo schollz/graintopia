@@ -1,8 +1,8 @@
-# `_--__---_`
+# `graintopia`
 
 ![six grains](https://repository-images.githubusercontent.com/638070059/b32be6c4-aa7e-43ad-aeed-ed96aa0daa22)
 
-three lands. each land has six grains. each grain moves with physics modeled by 1d kinematics of interlocked elastic beads of random masses. the width of the grain corresponds to the size of the sample. the speed, volume, pan, and direction of the sample is controlled through internalized random oscillations. these oscillations have a macro control, or micro control [if you want to venture into editing the heavily commented code](https://github.com/schollz/_--__---_/blob/main/lib/Engine_Sonicules.sc#L66-L78) (encouraged!!).
+three lands. each land has six grains. each grain moves with physics modeled by 1d kinematics of interlocked elastic beads of random masses. the width of the grain corresponds to the size of the sample. the speed, volume, pan, and direction of the sample is controlled through internalized random oscillations. these oscillations have a macro control, or micro control [if you want to venture into editing the heavily commented code](https://github.com/schollz/graintopia/blob/main/lib/Engine_Sonicules.sc#L66-L78) (encouraged!!).
 
 this script was born out of creating [a sampling demo for the ceti workshop series](https://github.com/schollz/workshops/blob/main/2023-03-ceti-supercollider/lush-sound-baths/workshop.scd#L468-L586). it has [a standalone SuperCollider implementation called Ube](https://schollz.com/tinker/ube/) (though Ube is missing the organic physics controls).
 
@@ -32,7 +32,7 @@ check the options to tune things even further. there is an incredible reverb ([a
 install with
 
 ```
-;install https://github.com/schollz/_--__---_
+;install https://github.com/schollz/graintopia
 ```
 
 after installing and you run, you may be prompted to install additional SuperCollider libraries. 

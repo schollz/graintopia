@@ -209,7 +209,7 @@ function Land:record(on)
     engine.record_stop()
   else
     if not self.recording then
-      engine.record_start(self.id,"/home/we/dust/audio/_--__---_/recordings/"..os.date('%Y-%m-%d-%H%M%S')..".wav")
+      engine.record_start(self.id,"/home/we/dust/audio/graintopia/recordings/"..os.date('%Y-%m-%d-%H%M%S')..".wav")
       self.recording=true
     end
   end

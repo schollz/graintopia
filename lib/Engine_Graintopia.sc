@@ -1,9 +1,9 @@
-// Engine_Sonicules
+// Engine_Graintopia
 
 // Inherit methods from CroneEngine
-Engine_Sonicules : CroneEngine {
+Engine_Graintopia : CroneEngine {
 
-	// Sonicules specific v0.1.0
+	// Graintopia specific v0.1.0
 	var server;
 	var params;
 	var bufs;
@@ -11,7 +11,7 @@ Engine_Sonicules : CroneEngine {
 	var syns;
 	var oscs;
 	var lands;
-	// Sonicules ^
+	// Graintopia ^
 
 	landPlay {
 		arg land=1,buf;
@@ -47,7 +47,7 @@ Engine_Sonicules : CroneEngine {
 	}
 
 	alloc {
-		// Sonicules specific v0.0.1
+		// Graintopia specific v0.0.1
 		var server = context.server;
 
 		// looper 
