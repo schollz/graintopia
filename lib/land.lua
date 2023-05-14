@@ -372,7 +372,7 @@ function Land:show_help()
       screen.move(xpos,42)
       fn("k1+e3")
       screen.move(xpos,50)
-      fn("changes fav")
+      fn("creates fav")
     end
   end
 end

@@ -128,7 +128,7 @@ Engine_Graintopia : CroneEngine {
 			});
 
 			// final output
-			snd = snd * volume / 15 * amp * Lag.kr(lfoAmp2,Rand(0.1,0.7));
+			snd = snd * volume / 10 * amp * Lag.kr(lfoAmp2,Rand(0.1,0.7));
 			Out.ar(busWet,snd*wet);
 			Out.ar(busDry,snd*(1-wet));
 		}).add;
@@ -141,7 +141,7 @@ Engine_Graintopia : CroneEngine {
 			var in = SoundIn.ar([0,1])*(\db_in.kr(0).dbamp);
 			var sndDry = In.ar(busDry,2);
 			var sndWet = In.ar(busWet,2);
-			// sndWet = (sndWet+(in*0.2));
+			// comment out this line to remove reverb:
 			sndWet=Fverb.ar(sndWet[0],sndWet[1],50,decay:LFNoise2.kr(1/4).range(70,90));
 
 			snd = in + sndDry + sndWet;
