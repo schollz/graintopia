@@ -18,7 +18,7 @@ Engine_Graintopia : CroneEngine {
 
 		6.do({ arg i;
 			var player=i+1;
-			var syn=Synth.head(server,"looper",[
+			var syn=Synth.head(server,"looper"++buf.numChannels,[
 				\land,land,
 				\player,player,
 				\buf,buf,
@@ -52,9 +52,11 @@ Engine_Graintopia : CroneEngine {
 
 		// looper 
 
-		SynthDef("looper",{
+		2.do({ arg i;
+		var numChannels=i+1;
+		SynthDef("looper"++numChannels,{
 			// main arguments
-			arg busWet,busDry,wet=0.5,buf,land,player,baseRate=1.0,rateMult=1.0,db=0.0,timescalein=1,posStart=0,posEnd=1,gate=1,ampNum=1;
+			arg busWet,busDry,wet=0.5,buf,land,player,baseRate=1.0,rateMult=1.0,db=0.0,timescalein=1,posStart=0,posEnd=1,gate=1,ampNum=1,rateSlew=1.0;
 			// variables to store UGens later
 			var amp = Lag.kr(db.dbamp,1);
 			var volume;
@@ -78,7 +80,7 @@ Engine_Graintopia : CroneEngine {
 			var lfoPan=SinOsc.kr(timescale/Rand(10,30),Rand(hi:2*pi)).range(0.5.neg,0.5);
 
 			// calculate the final rate
-			var rate=Lag.kr(lfoRate*(2*lfoForward-1),Rand(0.5,1.5))*BufRateScale.kr(buf);
+			var rate=Lag.kr(lfoRate*(2*lfoForward-1),rateSlew)*BufRateScale.kr(buf);
 
 			// set the start/end points
 			posStart = Clip.kr(LinLin.kr(posStart,0,1,0,frames),1024,frames-10240);
@@ -89,11 +91,11 @@ Engine_Graintopia : CroneEngine {
 
 			// playhead 1 has a play position and buffer reader
 			pos1=Phasor.ar(trig:1-switch,rate:rate,end:frames,resetPos:((lfoForward>0)*posStart)+((lfoForward<1)*posEnd));
-			snd1=BufRd.ar(2,buf,pos1,1.0,4);
+			snd1=BufRd.ar(numChannels,buf,pos1,1.0,4);
 
 			// playhead 2 has a play position and buffer reader
 			pos2=Phasor.ar(trig:switch,  rate:rate,end:frames,resetPos:((lfoForward>0)*posStart)+((lfoForward<1)*posEnd));
-			snd2=BufRd.ar(2,buf,pos2,1.0,4);
+			snd2=BufRd.ar(numChannels,buf,pos2,1.0,4);
 
 			// current position changes according to the swtich
 			pos=Select.ar(switch,[pos1,pos2]);
@@ -119,13 +121,18 @@ Engine_Graintopia : CroneEngine {
 			SendReply.kr(Impulse.kr(10),"/position",[land,player,posStart/frames,posEnd/frames,LinLin.kr(pos/frames,0,1,1,127).round,LinLin.kr(volume,0,1,1,8).round,lfoPan*2]);
 
 			// do the panning
-			snd=Balance2.ar(snd[0],snd[1],lfoPan);
+			if (numChannels>1,{
+				snd=Balance2.ar(snd[0],snd[1],lfoPan);
+			},{
+				snd=Pan2.ar(snd,lfoPan);
+			});
 
 			// final output
-			snd = snd * volume / 15 * amp * Lag.kr(lfoAmp2,Rand(0.1,0.7));
+			snd = snd * volume / 10 * amp * Lag.kr(lfoAmp2,Rand(0.1,0.7));
 			Out.ar(busWet,snd*wet);
 			Out.ar(busDry,snd*(1-wet));
 		}).add;
+		});
 
 		// basic players
 		SynthDef("fx",{
@@ -134,7 +141,7 @@ Engine_Graintopia : CroneEngine {
 			var in = SoundIn.ar([0,1])*(\db_in.kr(0).dbamp);
 			var sndDry = In.ar(busDry,2);
 			var sndWet = In.ar(busWet,2);
-			// sndWet = (sndWet+(in*0.2));
+			// comment out this line to remove reverb:
 			sndWet=Fverb.ar(sndWet[0],sndWet[1],50,decay:LFNoise2.kr(1/4).range(70,90));
 
 			snd = in + sndDry + sndWet;
