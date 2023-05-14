@@ -210,6 +210,10 @@ function key(k,z)
     installer:key(k,z)
     do return end
   end
+  if recording and z==1 then
+    recording_stop()
+    do return end
+  end
 
   if k==1 then
     shift=z==1
@@ -217,10 +221,6 @@ function key(k,z)
       shift_toggle=not shift_toggle
     end
   else
-    if recording and z==1 then
-      recording_stop()
-      do return end
-    end
     if shift then
       if k==3 and z==1 then
         -- do recording
