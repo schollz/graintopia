@@ -137,7 +137,7 @@ function init()
 
   params:add_number("land","land",1,NUM_LANDS,1)
   params:set_action("land",function(x)
-    local prams={"bars","db","favorites","boundary_start","boundary_width","total_energy","sample_file","timescalein","wet"}
+    local prams={"bars","db","favorites","boundary_start","boundary_width","total_energy","sample_file","timescalein","wet","move_duration","rateSlew"}
     for i=1,NUM_LANDS do
       for _,p in ipairs(prams) do
         if i==x and p~="favorites" then

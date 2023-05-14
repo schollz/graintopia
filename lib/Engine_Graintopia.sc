@@ -54,7 +54,7 @@ Engine_Graintopia : CroneEngine {
 
 		SynthDef("looper",{
 			// main arguments
-			arg busWet,busDry,wet=0.5,buf,land,player,baseRate=1.0,rateMult=1.0,db=0.0,timescalein=1,posStart=0,posEnd=1,gate=1,ampNum=1;
+			arg busWet,busDry,wet=0.5,buf,land,player,baseRate=1.0,rateMult=1.0,db=0.0,timescalein=1,posStart=0,posEnd=1,gate=1,ampNum=1,rateSlew=1.0;
 			// variables to store UGens later
 			var amp = Lag.kr(db.dbamp,1);
 			var volume;
@@ -78,7 +78,7 @@ Engine_Graintopia : CroneEngine {
 			var lfoPan=SinOsc.kr(timescale/Rand(10,30),Rand(hi:2*pi)).range(0.5.neg,0.5);
 
 			// calculate the final rate
-			var rate=Lag.kr(lfoRate*(2*lfoForward-1),Rand(0.5,1.5))*BufRateScale.kr(buf);
+			var rate=Lag.kr(lfoRate*(2*lfoForward-1),rateSlew)*BufRateScale.kr(buf);
 
 			// set the start/end points
 			posStart = Clip.kr(LinLin.kr(posStart,0,1,0,frames),1024,frames-10240);
