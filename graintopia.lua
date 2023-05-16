@@ -3,7 +3,7 @@
 -- llllllll.co/t/graintopia
 --
 -- land of grains.
--- v1.0.1
+-- v1.1.0
 --
 --    ▼ instructions below ▼
 --
@@ -166,7 +166,7 @@ function init()
   end)
 
   --debug
-  if true or not util.file_exists(_path.data.."graintopia/first") then
+  if not util.file_exists(_path.data.."graintopia/first") then
     params:set("1sample_file","/home/we/dust/code/graintopia/lib/piano_cm.flac")
     params:set("1boundary_start",15)
     params:set("1boundary_width",15)
@@ -174,7 +174,6 @@ function init()
     params:set("2sample_file","/home/we/dust/code/graintopia/lib/choir_cm.flac")
     params:set("2boundary_start",27.6)
     params:set("2boundary_width",13.2)
-    params:set("3sample_file","/home/we/dust/code/graintopia/lib/choir_cm.flac")
     params:set("1favorites",json.encode({{12,23},{34,10},{90,7}}))
     os.execute("touch ".._path.data.."graintopia/first")
   end
