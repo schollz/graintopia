@@ -41,6 +41,15 @@ function Land:init()
       self:pset("total_energy",0)
     end
   end
+  local do_clear=function(x)
+    if x==2 then
+      engine.land_clear(self.id)
+      self.waveform=waveform_:new{id=self.id}
+      self.loaded=false
+      self:pset("sample_file",_path.audio)
+      self.debounce_fn["landclear"]={8,function() self:pset("landclear",1) end}
+    end
+  end
   local do_record=function(x)
     if x==2 then
       recording_start()
@@ -49,6 +58,7 @@ function Land:init()
     end
   end
   local params_menu={
+    {id="landclear",name="clear",min=1,max=2,div=1,default=1,values={"e3 to clear","cleared"},action=do_clear},
     {id="db",name="db",engine=true,min=-96,max=16,exp=false,div=0.25,default=-6,unit="dB"},
     {id="bars",name="grains",min=0,max=6,exp=false,div=1,default=6,unit="",action=function(x) engine.land_set_num(self.id,x) end},
     {id="wet",name="reverb",engine=true,min=0,max=1,exp=false,div=0.05,default=0.2,unit=""},
@@ -74,16 +84,6 @@ function Land:init()
     table.insert(params_menu,{id="mididiff"..i,name=i..") rand tuning",min=-48,max=48,div=1,default=defaults[i].tuning,engine=true})
     table.insert(params_menu,{id="db"..i,name=i..") rand volume",min=-48,max=24,div=1,default=defaults[i].volume,engine=true,unit="db"})
   end
-
-  local do_clear=function(x)
-    if x==2 then 
-      engine.land_clear(self.id)
-      self.waveform=waveform_:new{id=self.id}
-      self.loaded=false
-      self:pset("landclear",1)
-    end
-  end
-  table.insert(params_menu,{id="landclear",name="clear",min=1,max=2,div=1,default=1,values={"e3 to clear","cleared"},action=do_clear})
 
   -- params:add_group("LAND "..self.id,#params_menu+1)
   params:add_text(self.id.."favorites","favorites","")

@@ -137,7 +137,7 @@ function init()
 
   params:add_number("land","land",1,NUM_LANDS,1)
   params:set_action("land",function(x)
-    local prams={"bars","db","tuning","favorites","boundary_start","boundary_width","freeze","record","total_energy","sample_file","timescalein","wet","move_duration","rateSlew"}
+    local prams={"bars","db","tuning","landclear","favorites","boundary_start","boundary_width","freeze","record","total_energy","sample_file","timescalein","wet","move_duration","rateSlew"}
     for i=1,5 do
       table.insert(prams,"db"..i)
       table.insert(prams,"mididiff"..i)
