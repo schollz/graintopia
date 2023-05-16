@@ -40,6 +40,13 @@ function Land:init()
       self:pset("total_energy",0)
     end
   end
+  local do_record=function(x)
+    if x==2 then
+      recording_start()
+    else
+      recording_stop()
+    end
+  end
   local params_menu={
     {id="db",name="db",engine=true,min=-96,max=16,exp=false,div=0.25,default=-6,unit="dB"},
     {id="bars",name="grains",min=0,max=6,exp=false,div=1,default=6,unit="",action=function(x) engine.land_set_num(self.id,x) end},
@@ -51,6 +58,7 @@ function Land:init()
     {id="timescalein",name="timescale",engine=true,min=0,max=10,exp=false,div=0.1,default=1,unit="x"},
     {id="total_energy",name="temperature",min=0,max=10000,exp=false,div=10,default=100,unit="K"},
     {id="freeze",name="freeze",min=1,max=2,div=1,default=0,values={"no","yes"},action=do_freeze},
+    {id="record",name="record",min=1,max=2,div=1,default=0,values={"no","yes"},action=do_record},
   }
   -- params:add_group("LAND "..self.id,#params_menu+1)
   params:add_text(self.id.."favorites","favorites","")
