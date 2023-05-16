@@ -61,7 +61,7 @@ function Land:init()
     {id="freeze",name="freeze",min=1,max=2,div=1,default=0,values={"no","yes"},action=do_freeze},
     {id="record",name="record",min=1,max=2,div=1,default=0,values={"no","yes"},action=do_record},
     {id="tuning",name="tuning",min=-48,max=48,div=0.01,default=0,engine=true},
-  } 
+  }
   local defaults={
     {weight=14,tuning=0,volume=0},
     {weight=8,tuning=-12,volume=4},
@@ -69,7 +69,7 @@ function Land:init()
     {weight=6,tuning=12,volume=-8},
     {weight=4,tuning=-24,volume=-2},
   }
-  for i=1,5 do 
+  for i=1,5 do
     table.insert(params_menu,{id="weight"..i,name=i..") rand weight ",min=0,max=100,div=1,default=defaults[i].weight,engine=true})
     table.insert(params_menu,{id="mididiff"..i,name=i..") rand tuning",min=-48,max=48,div=1,default=defaults[i].tuning,engine=true})
     table.insert(params_menu,{id="db"..i,name=i..") rand volume",min=-48,max=24,div=1,default=defaults[i].volume,engine=true,unit="db"})
@@ -106,7 +106,7 @@ function Land:init()
   end
 
   params:set_action(self.id.."sample_file",function(x)
-    self.debounce_fn["load"]={30,function() self:load(x) end}
+    self.debounce_fn["load"]={15,function() self:load(x) end}
   end)
   for _,pram in ipairs(params_menu) do
     local formatter=pram.formatter
@@ -188,7 +188,7 @@ function Land:do_move(k,v,x)
 end
 
 function Land:update()
-  -- update the debouncing 
+  -- update the debouncing
   for k,v in pairs(self.debounce_fn) do
     if v~=nil and v[1]~=nil and v[1]>0 then
       v[1]=v[1]-1
@@ -205,7 +205,7 @@ function Land:update()
       end
     end
   end
-  
+
   -- update favorite moving
   if self.moving[1] or self.moving[2] then
     for i,k in ipairs({"boundary_start","boundary_width"}) do
@@ -273,6 +273,10 @@ end
 
 function Land:load(fname)
   if fname~="cancel" and self.file_exists(fname) and (not self.is_dir(fname)) then
+    local ch,samples=audio.file_info(fname)
+    if samples==nil or samples<10 then
+      do return end
+    end
     print("[land:load]",fname)
     self.waveform:load(fname)
     engine.land_load(self.id,fname)
