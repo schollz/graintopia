@@ -75,6 +75,16 @@ function Land:init()
     table.insert(params_menu,{id="db"..i,name=i..") rand volume",min=-48,max=24,div=1,default=defaults[i].volume,engine=true,unit="db"})
   end
 
+  local do_clear=function(x)
+    if x==2 then 
+      engine.land_clear(self.id)
+      self.waveform=waveform_:new{id=self.id}
+      self.loaded=false
+      self:pset("landclear",1)
+    end
+  end
+  table.insert(params_menu,{id="landclear",name="clear",min=1,max=2,div=1,default=1,values={"e3 to clear","cleared"},action=do_clear})
+
   -- params:add_group("LAND "..self.id,#params_menu+1)
   params:add_text(self.id.."favorites","favorites","")
   params:set_action(self.id.."favorites",function(x)

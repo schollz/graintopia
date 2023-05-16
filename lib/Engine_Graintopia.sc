@@ -298,6 +298,19 @@ Engine_Graintopia : CroneEngine {
 				});
 			});
 		});
+
+		
+		this.addCommand("land_clear","i",{ arg msg;
+			var land=msg[1];
+			6.do({ arg i;
+				var player=i+1;
+				if (lands.at(land).at(player).notNil,{
+					if (lands.at(land).at(player).isRunning,{
+						lands.at(land).at(player).set(\gate,0);
+					});
+				});
+			});
+		});
 		
 		this.addCommand("land_set_num","ii",{ arg msg;
 			var land=msg[1];
