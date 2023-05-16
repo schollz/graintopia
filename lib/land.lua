@@ -19,6 +19,7 @@ function Land:init()
   self.waveform=waveform_:new{id=self.id}
   self.endpoints={}
   self.favorites={}
+  self.debounce_fn={}
 
   local update_boundary=function()
     self:update_boundary(x)
@@ -90,26 +91,22 @@ function Land:init()
     end
   end)
   params:add_file(self.id.."sample_file","file",_path.audio)
+  self.is_dir=function(path)
+    local f=io.open(path,"r")
+    if f==nil then
+      do return false end
+    end
+    local ok,err,code=f:read(1)
+    f:close()
+    return code==21
+  end
+  self.file_exists=function(name)
+    local f=io.open(name,"r")
+    if f~=nil then io.close(f) return true else return false end
+  end
+
   params:set_action(self.id.."sample_file",function(x)
-    local is_dir=function(path)
-      local f=io.open(path,"r")
-      if f==nil then
-        do return false end
-      end
-      local ok,err,code=f:read(1)
-      f:close()
-      return code==21
-    end
-    local file_exists=function(name)
-      local f=io.open(name,"r")
-      if f~=nil then io.close(f) return true else return false end
-    end
-    -- print(string.format("[sample_file%d] loading '%s'",self.id,x))
-    -- print("file exists?",file_exists(x))
-    -- print("is_dir?",is_dir(x))
-    if x~="cancel" and file_exists(x) and (not is_dir(x)) then
-      self:load(x)
-    end
+    self.debounce_fn["load"]={30,function() self:load(x) end}
   end)
   for _,pram in ipairs(params_menu) do
     local formatter=pram.formatter
@@ -191,6 +188,24 @@ function Land:do_move(k,v,x)
 end
 
 function Land:update()
+  -- update the debouncing 
+  for k,v in pairs(self.debounce_fn) do
+    if v~=nil and v[1]~=nil and v[1]>0 then
+      v[1]=v[1]-1
+      if v[1]~=nil and v[1]==0 then
+        if v[2]~=nil then
+          local status,err=pcall(v[2])
+          if err~=nil then
+            print(status,err)
+          end
+        end
+        self.debounce_fn[k]=nil
+      else
+        self.debounce_fn[k]=v
+      end
+    end
+  end
+  
   -- update favorite moving
   if self.moving[1] or self.moving[2] then
     for i,k in ipairs({"boundary_start","boundary_width"}) do
@@ -257,10 +272,12 @@ function Land:record(on)
 end
 
 function Land:load(fname)
-  print("[land:load]",fname)
-  self.waveform:load(fname)
-  engine.land_load(self.id,fname)
-  self.loaded=true
+  if fname~="cancel" and self.file_exists(fname) and (not self.is_dir(fname)) then
+    print("[land:load]",fname)
+    self.waveform:load(fname)
+    engine.land_load(self.id,fname)
+    self.loaded=true
+  end
 end
 
 function Land:update_favorites()
