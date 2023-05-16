@@ -58,7 +58,8 @@ Engine_Graintopia : CroneEngine {
 			// main arguments
 			arg busWet,busDry,wet=0.5,buf,land,player,baseRate=1.0,rateMult=1.0,db=0.0,timescalein=1,posStart=0,posEnd=1,gate=1,ampNum=1,rateSlew=1.0
 			weight1=15,weight2=8,weight3=6,weight4=4,weight5=2,
-			rate1=1, rate2=2, rate3=0.5, rate4=0.25, rate5 =4,
+			mididiff1=1, mididiff2=2, mididiff3=0.5, mididiff4=0.25, mididiff5 =4,
+			miditune=0,
 			db1=0, db2=6.neg, db3=8.neg, db4=12.neg, db5 = 32.neg,
 			// variables to store UGens later
 			var amp = Lag.kr(db.dbamp,1);
@@ -73,7 +74,7 @@ Engine_Graintopia : CroneEngine {
 			var lfoRateAmp=Demand.kr(Impulse.kr(0)+Dust.kr(timescale/Rand(10,30)),0,
 				Dwrand([0,1,2,3,4,5],[weight1,weight2,weight3,weight4,weight5]/(weight1+weight2+weight3+weight4+weight5),inf)
 			);
-			var lfoRate=Select.kr(lfoRateAmp,[rate1,rate2,rate3,rate4,rate5]);
+			var lfoRate=(miditune+Select.kr(lfoRateAmp,[mididiff1,mididiff2,mididiff3,mididiff4,mididiff5])).midiratio;
 			var lfoAmp2=Select.kr(lfoRateAmp,[db1,db2,db3,db4,db5]).dbamp;
 			// LFO for switching between forward and reverse <-- tinker
 			var lfoForward=Demand.kr(Impulse.kr(timescale/Rand(5,15)),0,Drand([0,1],inf));

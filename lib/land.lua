@@ -59,7 +59,21 @@ function Land:init()
     {id="total_energy",name="temperature",min=0,max=10000,exp=false,div=10,default=100,unit="K"},
     {id="freeze",name="freeze",min=1,max=2,div=1,default=0,values={"no","yes"},action=do_freeze},
     {id="record",name="record",min=1,max=2,div=1,default=0,values={"no","yes"},action=do_record},
+    {id="tuning",name="tuning",min=-48,max=48,div=0.01,default=0,engine=true},
+  } 
+  local defaults={
+    {weight=14,tuning=0,volume=0},
+    {weight=8,tuning=-12,volume=4},
+    {weight=3,tuning=24,volume=-16},
+    {weight=6,tuning=12,volume=-8},
+    {weight=4,tuning=-24,volume=-2},
   }
+  for i=1,5 do 
+    table.insert(params_menu,{id="weight"..i,name=i..") weight ",min=0,max=100,div=1,default=defaults[i].weight,engine=true})
+    table.insert(params_menu,{id="mididiff"..i,name=i..")tuning",min=-48,max=48,div=1,default=defaults[i].tuning,engine=true})
+    table.insert(params_menu,{id="db"..i,name=i..")volume",min=-48,max=24,div=1,default=defaults[i].volume,engine=true,unit="db"})
+  end
+
   -- params:add_group("LAND "..self.id,#params_menu+1)
   params:add_text(self.id.."favorites","favorites","")
   params:set_action(self.id.."favorites",function(x)
