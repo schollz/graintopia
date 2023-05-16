@@ -467,6 +467,12 @@ function Land:redraw()
     screen.fill()
   end
   self:show_help()
+
+  if self:pget("freeze")==2 then
+    screen.level(15)
+    screen.move(126,6)
+    screen.text_center("*")
+  end
 end
 
 return Land
