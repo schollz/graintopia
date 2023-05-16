@@ -21,7 +21,31 @@ function Land:init()
   self.favorites={}
 
   local update_boundary=function()
-    self:update_boundary()
+    self:update_boundary(x)
+  end
+  self.freeze_state={
+    timescalein=1,
+    total_energy=100,
+  }
+  local do_freeze=function(x)
+    if x==1 then
+      for k,v in pairs(self.freeze_state) do
+        self:pset(k,v)
+      end
+    else
+      for k,v in pairs(self.freeze_state) do
+        self.freeze_state[k]=self:pget(k)
+      end
+      self:pset("timescalein",0)
+      self:pset("total_energy",0)
+    end
+  end
+  local do_record=function(x)
+    if x==2 then
+      recording_start()
+    else
+      recording_stop()
+    end
   end
   local params_menu={
     {id="db",name="db",engine=true,min=-96,max=16,exp=false,div=0.25,default=-6,unit="dB"},
@@ -32,8 +56,9 @@ function Land:init()
     {id="boundary_width",name="boundary width",min=0,max=127,exp=false,div=0.2,default=127,unit="%",action=update_boundary},
     {id="move_duration",name="move duration",engine=true,min=0,max=10,exp=false,div=0.1,default=2,unit="s"},
     {id="timescalein",name="timescale",engine=true,min=0,max=10,exp=false,div=0.1,default=1,unit="x"},
-    {id="total_energy",name="temperature",min=1,max=10000,exp=true,div=10,default=100,unit="K"},
-
+    {id="total_energy",name="temperature",min=0,max=10000,exp=false,div=10,default=100,unit="K"},
+    {id="freeze",name="freeze",min=1,max=2,div=1,default=0,values={"no","yes"},action=do_freeze},
+    {id="record",name="record",min=1,max=2,div=1,default=0,values={"no","yes"},action=do_record},
   }
   -- params:add_group("LAND "..self.id,#params_menu+1)
   params:add_text(self.id.."favorites","favorites","")
@@ -319,8 +344,13 @@ function Land:enc(k,d)
     end
   else
     if k==1 then
-      self:pdelta("timescalein",d)
-      self:pdelta("total_energy",d)
+      if d<0 then
+        self:pset("freeze",1)
+      elseif d>0 then
+        self:pset("freeze",2)
+      end
+      -- self:pdelta("timescalein",d)
+      -- self:pdelta("total_energy",d)
     elseif k==2 then
       self:pdelta("boundary_start",d)
     elseif k==3 then
@@ -437,6 +467,12 @@ function Land:redraw()
     screen.fill()
   end
   self:show_help()
+
+  if self:pget("freeze")==2 then
+    screen.level(15)
+    screen.move(126,6)
+    screen.text_center("*")
+  end
 end
 
 return Land
