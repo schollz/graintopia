@@ -35,6 +35,7 @@ Engine_Graintopia : CroneEngine {
 			});
 			// update with current volumes, etc
 			params.at(player).keysValuesDo({ arg k, val;
+				[k,val].postln;
 				syn.set(k,val);
 			});
 			lands.at(land).put(player,syn);
@@ -58,7 +59,7 @@ Engine_Graintopia : CroneEngine {
 			// main arguments
 			arg busWet,busDry,wet=0.5,buf,land,player,baseRate=1.0,rateMult=1.0,db=0.0,timescalein=1,posStart=0,posEnd=1,gate=1,ampNum=1,rateSlew=1.0,
 			weight1=15,weight2=8,weight3=6,weight4=4,weight5=2,
-			mididiff1=1, mididiff2=2, mididiff3=0.5, mididiff4=0.25, mididiff5 =4,
+			mididiff1=0, mididiff2=12, mididiff3=12.neg, mididiff4=24.neg, mididiff5 =24,
 			miditune=0,
 			db1=0, db2=6.neg, db3=8.neg, db4=12.neg, db5 = 32.neg;
 			// variables to store UGens later
