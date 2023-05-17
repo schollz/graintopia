@@ -75,8 +75,8 @@ function Land:init()
   local defaults={
     {weight=14,tuning=0,volume=0},
     {weight=8,tuning=-12,volume=4},
-    {weight=3,tuning=24,volume=-24},
-    {weight=6,tuning=12,volume=-12},
+    {weight=3,tuning=24,volume=-18},
+    {weight=6,tuning=12,volume=-8},
     {weight=4,tuning=-24,volume=2},
   }
   for i=1,5 do

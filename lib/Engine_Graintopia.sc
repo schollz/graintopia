@@ -131,7 +131,7 @@ Engine_Graintopia : CroneEngine {
 			});
 
 			// final output
-			snd = snd * volume / 10 * amp * Lag.kr(lfoAmp2,Rand(0.1,0.7));
+			snd = snd * volume / 5 * amp * Lag.kr(lfoAmp2,Rand(0.1,0.7));
 			Out.ar(busWet,snd*wet);
 			Out.ar(busDry,snd*(1-wet));
 		}).add;
