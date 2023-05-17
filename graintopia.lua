@@ -36,8 +36,11 @@ selecting=false
 function load_file(file)
   selecting=false
   if file~="cancel" then
+    _,basename,_=string.match(file,"(.-)([^\\/]-%.?([^%.\\/]*))$")
+    show_message("loading "..basename.."...",2)
     params:set(params:get("land").."sample_file",file)
   end
+  shift_toggle=false
 end
 
 NUM_LANDS=3
