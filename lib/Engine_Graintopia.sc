@@ -15,16 +15,19 @@ Engine_Graintopia : CroneEngine {
 
 	landPlay {
 		arg land=1,buf;
-
+		var args=[
+			\land,land,
+			\buf,buf,
+			\busDry,buses.at("busDry"),
+			\busWet,buses.at("busWet")
+		];
+		// update with current volumes, etc
+		params.at(land).keysValuesDo({ arg k, v;
+			args=args++[k,v];
+		});
 		6.do({ arg i;
 			var player=i+1;
-			var syn=Synth.head(server,"looper"++buf.numChannels,[
-				\land,land,
-				\player,player,
-				\buf,buf,
-				\busDry,buses.at("busDry")
-				,\busWet,buses.at("busWet"),
-			]).onFree({
+			var syn=Synth.head(server,"looper"++buf.numChannels,args++[\player,player]).onFree({
 				("[landPlay] land"+land+", player"+player+"finished.").postln;				
 			});
 			("[landPlay] land"+land+", player"+player+"started.").postln;				
@@ -33,13 +36,8 @@ Engine_Graintopia : CroneEngine {
 					lands.at(land).at(player).set(\gate,0); // turn off
 				});
 			});
-			// update with current volumes, etc
-			params.at(player).keysValuesDo({ arg k, val;
-				[k,val].postln;
-				syn.set(k,val);
-			});
 			lands.at(land).put(player,syn);
-			NodeWatcher.register(syn);
+			NodeWatcher.register(lands.at(land).at(player));
 		});
 	}
 
@@ -205,13 +203,13 @@ Engine_Graintopia : CroneEngine {
 		
 		// define buses
 		buses.put("busDry",Bus.audio(server,2));
-		buses.put("busReverb",Bus.audio(server,2));
+		buses.put("busWet",Bus.audio(server,2));
 		server.sync;
 
 		// main out
 		syns.put("fx",Synth.tail(server,"fx",[
 			busDry: buses.at("busDry"),
-			busReverb: buses.at("busReverb"),
+			busReverb: buses.at("busWet"),
 		]));
 		server.sync;
 

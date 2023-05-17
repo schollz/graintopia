@@ -137,7 +137,7 @@ function init()
 
   params:add_number("land","land",1,NUM_LANDS,1)
   params:set_action("land",function(x)
-    local prams={"bars","db","tuning","landclear","favorites","boundary_start","boundary_width","freeze","record","total_energy","sample_file","timescalein","wet","move_duration","rateSlew"}
+    local prams={"bars","db","miditune","landclear","favorites","boundary_start","boundary_width","freeze","record","total_energy","sample_file","timescalein","wet","move_duration","rateSlew"}
     for i=1,5 do
       table.insert(prams,"db"..i)
       table.insert(prams,"mididiff"..i)
@@ -171,16 +171,16 @@ function init()
   end)
 
   --debug
-  if true or not util.file_exists(_path.data.."graintopia/first") then
+  if not util.file_exists(_path.data.."graintopia/first") then
     params:set("1sample_file","/home/we/dust/code/graintopia/lib/piano_cm.flac")
-    -- params:set("1boundary_start",15)
-    -- params:set("1boundary_width",15)
-    -- show_message("welcome to graintopia",10)
-    -- params:set("2sample_file","/home/we/dust/code/graintopia/lib/choir_cm.flac")
-    -- params:set("2boundary_start",27.6)
-    -- params:set("2boundary_width",13.2)
-    -- params:set("1favorites",json.encode({{12,23},{34,10},{90,7}}))
-    -- os.execute("touch ".._path.data.."graintopia/first")
+    params:set("1boundary_start",15)
+    params:set("1boundary_width",15)
+    show_message("welcome to graintopia",10)
+    params:set("2sample_file","/home/we/dust/code/graintopia/lib/choir_cm.flac")
+    params:set("2boundary_start",27.6)
+    params:set("2boundary_width",13.2)
+    params:set("1favorites",json.encode({{12,23},{34,10},{90,7}}))
+    os.execute("touch ".._path.data.."graintopia/first")
   end
 
   -- setup levels
