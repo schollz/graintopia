@@ -62,7 +62,6 @@ function Land:init()
     {id="db",name="db",engine=true,min=-96,max=16,exp=false,div=0.25,default=-6,unit="dB"},
     {id="bars",name="grains",min=0,max=6,exp=false,div=1,default=6,unit="",action=function(x) engine.land_set_num(self.id,x) end},
     {id="wet",name="reverb",engine=true,min=0,max=1,exp=false,div=0.05,default=0.2,unit=""},
-    {id="rateSlew",name="slew rate",engine=true,min=0,max=10,exp=false,div=0.05,default=math.random(100,200)/100,unit="s"},
     {id="boundary_start",name="boundary start",min=0,max=127,exp=false,div=0.2,default=0,unit="%",action=update_boundary},
     {id="boundary_width",name="boundary width",min=0,max=127,exp=false,div=0.2,default=127,unit="%",action=update_boundary},
     {id="move_duration",name="move duration",engine=true,min=0,max=10,exp=false,div=0.1,default=2,unit="s"},
@@ -71,6 +70,7 @@ function Land:init()
     {id="freeze",name="freeze",min=1,max=2,div=1,default=0,values={"no","yes"},action=do_freeze},
     {id="record",name="record",min=1,max=2,div=1,default=0,values={"no","yes"},action=do_record},
     {id="miditune",name="tuning",min=-48,max=48,div=0.01,default=0,engine=true},
+    {id="rateSlew",name="slew rate",engine=true,min=0,max=10,exp=false,div=0.05,default=math.random(100,200)/100,unit="s"},
   }
   local defaults={
     {weight=14,tuning=0,volume=0},
