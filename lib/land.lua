@@ -45,7 +45,7 @@ function Land:init()
     if x==2 then
       engine.land_clear(self.id)
       self.waveform=waveform_:new{id=self.id}
-      self.loaded=false
+      self:pset("loaded",0)
       self:pset("sample_file",_path.audio)
       self.debounce_fn["landclear"]={8,function() self:pset("landclear",1) end}
     end
@@ -55,6 +55,11 @@ function Land:init()
       recording_start()
     else
       recording_stop()
+    end
+  end
+  local do_loading=function(x)
+    if x==0 then
+      do_clear(2)
     end
   end
   local params_menu={
@@ -71,6 +76,7 @@ function Land:init()
     {id="record",name="record",min=1,max=2,div=1,default=0,values={"no","yes"},action=do_record},
     {id="miditune",name="tuning",min=-48,max=48,div=0.01,default=0,engine=true},
     {id="rateSlew",name="slew rate",engine=true,min=0,max=10,exp=false,div=0.05,default=math.random(100,200)/100,unit="s"},
+    {id="loaded",name="loaded",min=0,max=1,exp=false,div=1,default=0,hide=true,action=do_loading},
   }
   local defaults={
     {weight=14,tuning=0,volume=0},
@@ -133,6 +139,9 @@ function Land:init()
       controlspec=controlspec.new(pram.min,pram.max,pram.exp and "exp" or "lin",pram.div,pram.default,pram.unit or "",pram.div/(pram.max-pram.min)),
       formatter=formatter,
     }
+    if pram.hide then
+      params:hide(pid)
+    end
     params:set_action(pid,function(x)
       if pram.engine then
         engine.land_set(self.id,pram.id,x)
@@ -247,7 +256,7 @@ function Land:update()
     end
   end
 
-  if self.loaded then
+  if self:pget("loaded")==1 then
     engine.land_set_endpoints(self.id,
       endpoints[1],
       endpoints[2],
@@ -290,7 +299,7 @@ function Land:load(fname)
     print("[land:load]",fname)
     self.waveform:load(fname)
     engine.land_load(self.id,fname)
-    self.loaded=true
+    self:pset("loaded",1)
   end
 end
 
@@ -461,7 +470,7 @@ function Land:show_help2()
 end
 
 function Land:redraw()
-  if not self.loaded then
+  if self:pget("loaded")==0 then
     self:show_help2()
     do return end
   end

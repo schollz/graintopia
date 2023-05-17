@@ -168,7 +168,9 @@ function init()
   clock.run(function()
     while true do
       clock.sleep(1/CLOCK_RATE)
-      lands[params:get("land")]:update()
+      for i=1,3 do
+        lands[i]:update()
+      end
       redraw()
     end
   end)
@@ -192,6 +194,7 @@ function init()
   params:set("monitor_level",-inf)
   levels["engine_level"]=params:get("engine_level")
   params:set("engine_level",0)
+
 
 end
 
