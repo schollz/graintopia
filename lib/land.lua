@@ -19,6 +19,7 @@ function Land:init()
   self.waveform=waveform_:new{id=self.id}
   self.endpoints={}
   self.favorites={}
+  self.debounce_fn={}
 
   local update_boundary=function()
     self:update_boundary(x)
@@ -40,6 +41,15 @@ function Land:init()
       self:pset("total_energy",0)
     end
   end
+  local do_clear=function(x)
+    if x==2 then
+      engine.land_clear(self.id)
+      self.waveform=waveform_:new{id=self.id}
+      self.loaded=false
+      self:pset("sample_file",_path.audio)
+      self.debounce_fn["landclear"]={8,function() self:pset("landclear",1) end}
+    end
+  end
   local do_record=function(x)
     if x==2 then
       recording_start()
@@ -48,6 +58,7 @@ function Land:init()
     end
   end
   local params_menu={
+    {id="landclear",name="clear",min=1,max=2,div=1,default=1,values={"e3 to clear","cleared"},action=do_clear},
     {id="db",name="db",engine=true,min=-96,max=16,exp=false,div=0.25,default=-6,unit="dB"},
     {id="bars",name="grains",min=0,max=6,exp=false,div=1,default=6,unit="",action=function(x) engine.land_set_num(self.id,x) end},
     {id="wet",name="reverb",engine=true,min=0,max=1,exp=false,div=0.05,default=0.2,unit=""},
@@ -59,7 +70,21 @@ function Land:init()
     {id="total_energy",name="temperature",min=0,max=10000,exp=false,div=10,default=100,unit="K"},
     {id="freeze",name="freeze",min=1,max=2,div=1,default=0,values={"no","yes"},action=do_freeze},
     {id="record",name="record",min=1,max=2,div=1,default=0,values={"no","yes"},action=do_record},
+    {id="tuning",name="tuning",min=-48,max=48,div=0.01,default=0,engine=true},
   }
+  local defaults={
+    {weight=14,tuning=0,volume=0},
+    {weight=8,tuning=-12,volume=4},
+    {weight=3,tuning=24,volume=-16},
+    {weight=6,tuning=12,volume=-8},
+    {weight=4,tuning=-24,volume=-2},
+  }
+  for i=1,5 do
+    table.insert(params_menu,{id="weight"..i,name=i..") rand weight ",min=0,max=100,div=1,default=defaults[i].weight,engine=true})
+    table.insert(params_menu,{id="mididiff"..i,name=i..") rand tuning",min=-48,max=48,div=1,default=defaults[i].tuning,engine=true})
+    table.insert(params_menu,{id="db"..i,name=i..") rand volume",min=-48,max=24,div=1,default=defaults[i].volume,engine=true,unit="db"})
+  end
+
   -- params:add_group("LAND "..self.id,#params_menu+1)
   params:add_text(self.id.."favorites","favorites","")
   params:set_action(self.id.."favorites",function(x)
@@ -76,26 +101,22 @@ function Land:init()
     end
   end)
   params:add_file(self.id.."sample_file","file",_path.audio)
+  self.is_dir=function(path)
+    local f=io.open(path,"r")
+    if f==nil then
+      do return false end
+    end
+    local ok,err,code=f:read(1)
+    f:close()
+    return code==21
+  end
+  self.file_exists=function(name)
+    local f=io.open(name,"r")
+    if f~=nil then io.close(f) return true else return false end
+  end
+
   params:set_action(self.id.."sample_file",function(x)
-    local is_dir=function(path)
-      local f=io.open(path,"r")
-      if f==nil then
-        do return false end
-      end
-      local ok,err,code=f:read(1)
-      f:close()
-      return code==21
-    end
-    local file_exists=function(name)
-      local f=io.open(name,"r")
-      if f~=nil then io.close(f) return true else return false end
-    end
-    -- print(string.format("[sample_file%d] loading '%s'",self.id,x))
-    -- print("file exists?",file_exists(x))
-    -- print("is_dir?",is_dir(x))
-    if x~="cancel" and file_exists(x) and (not is_dir(x)) then
-      self:load(x)
-    end
+    self.debounce_fn["load"]={15,function() self:load(x) end}
   end)
   for _,pram in ipairs(params_menu) do
     local formatter=pram.formatter
@@ -177,6 +198,24 @@ function Land:do_move(k,v,x)
 end
 
 function Land:update()
+  -- update the debouncing
+  for k,v in pairs(self.debounce_fn) do
+    if v~=nil and v[1]~=nil and v[1]>0 then
+      v[1]=v[1]-1
+      if v[1]~=nil and v[1]==0 then
+        if v[2]~=nil then
+          local status,err=pcall(v[2])
+          if err~=nil then
+            print(status,err)
+          end
+        end
+        self.debounce_fn[k]=nil
+      else
+        self.debounce_fn[k]=v
+      end
+    end
+  end
+
   -- update favorite moving
   if self.moving[1] or self.moving[2] then
     for i,k in ipairs({"boundary_start","boundary_width"}) do
@@ -243,10 +282,16 @@ function Land:record(on)
 end
 
 function Land:load(fname)
-  print("[land:load]",fname)
-  self.waveform:load(fname)
-  engine.land_load(self.id,fname)
-  self.loaded=true
+  if fname~="cancel" and self.file_exists(fname) and (not self.is_dir(fname)) then
+    local ch,samples=audio.file_info(fname)
+    if samples==nil or samples<10 then
+      do return end
+    end
+    print("[land:load]",fname)
+    self.waveform:load(fname)
+    engine.land_load(self.id,fname)
+    self.loaded=true
+  end
 end
 
 function Land:update_favorites()
