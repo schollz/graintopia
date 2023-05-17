@@ -209,7 +209,7 @@ Engine_Graintopia : CroneEngine {
 		// main out
 		syns.put("fx",Synth.tail(server,"fx",[
 			busDry: buses.at("busDry"),
-			busReverb: buses.at("busWet"),
+			busWet: buses.at("busWet"),
 		]));
 		server.sync;
 
